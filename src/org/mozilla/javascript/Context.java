@@ -294,11 +294,16 @@ public class Context
 
     /**
      * Special to HtmlUnit's Rhino fork.
-     * Enable assignment to properties with only a getter defined.
-     * This was Rhino's standard behaviour until 1.7R2.
+     *
+     * The same web browser (e.g. FF) may allow setting read-only property, 
+     * ignores setting the read-only property, or even throw an exception.
+     *
+     * So, by having this feature, ScriptableObject itself is asked throw
+     * {@link ScriptableObject#isReadOnlySettable} whether to allow, ignore or throw an exception.
+     *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_WRITE_READONLY_PROPERTIES = 14;
+    public static final int FEATURE_HTMLUNIT_ASK_OBJECT_TO_WRITE_READONLY = 14;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -306,7 +311,7 @@ public class Context
      * (exceptions occurring in host objects).
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_JS_CATCH_JAVA_EXCEPTION = 115;
+    public static final int FEATURE_HTMLUNIT_JS_CATCH_JAVA_EXCEPTION = 1155;
 
     /**
      * Defines how an undefined  "this" parameter is handled in certain calls. Previously Rhino
@@ -323,6 +328,46 @@ public class Context
      * @since 1.7.8
      */
     public static final int FEATURE_ENUMERATE_IDS_FIRST = 16;
+
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Is the default value of {@link Arguments} "Object" or "Arguments"
+     *
+     * By default {@link #hasFeature(int)} returns false.
+     */
+    public static final int FEATURE_HTMLUNIT_ARGUMENTS_IS_OBJECT = 116;
+
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * When setting the function name to call, call thisObject.setter.
+     *
+     * This is needed for something like "function onclick() {onclick = null}"
+     *
+     * Implemented by transforming it into "function onclick() {<b>this.</b>onclick = null}"
+     *
+     * By default {@link #hasFeature(int)} returns false.
+     */
+    public static final int FEATURE_HTMLUNIT_FUNCTION_NULL_SETTER = 117;
+
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Whether the "arguments" object read-only or not.
+     *
+     * By default {@link #hasFeature(int)} returns false.
+     */
+    public static final int FEATURE_HTMLUNIT_ARGUMENTS_IS_READ_ONLY = 18;
+
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Indicates that 'eval' function should have access to the local function scope.
+     *
+     * By default {@link #hasFeature(int)} returns true.
+     */
+    public static final int FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE = 19;
 
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
