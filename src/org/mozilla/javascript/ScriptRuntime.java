@@ -2307,6 +2307,9 @@ public class ScriptRuntime {
                                                   Context cx,
                                                   Scriptable scope)
     {
+        if ("eval".equals(name)) {
+            lastEvalTopCalled_ = true;
+        }
         Scriptable parent = scope.getParentScope();
         if (parent == null) {
             Object result = topScopeName(cx, scope, name);
@@ -2404,6 +2407,9 @@ public class ScriptRuntime {
                                                   String property,
                                                   Context cx, Scriptable scope)
     {
+        if ("eval".equals(property)) {
+            lastEvalTopCalled_ = false;
+        }
         Scriptable thisObj = toObjectOrNull(cx, obj, scope);
         return getPropFunctionAndThisHelper(obj, property, cx, thisObj);
     }
@@ -2506,6 +2512,18 @@ public class ScriptRuntime {
         return function.construct(cx, scope, args);
     }
 
+    /**
+     * This indicates whether last call of "eval" was at the top scope (i.e. "eval()")
+     * or not (i.e. "scope.eval()"), as each one has different behavior.
+     *
+     * Ideally, we should have "eval" at top scope and we use Context.FEATURE_DYNAMIC_SCOPE,
+     * but it will complex the code.
+     *
+     * The current implementation sets this value to true when "eval" is called, and
+     * false on "something.eval()"
+     */
+    private static boolean lastEvalTopCalled_;
+    
     public static Object callSpecial(Context cx, Callable fun,
                                      Scriptable thisObj,
                                      Object[] args, Scriptable scope,
@@ -2514,6 +2532,12 @@ public class ScriptRuntime {
     {
         if (callType == Node.SPECIALCALL_EVAL) {
             if (thisObj.getParentScope() == null && NativeGlobal.isEvalFunction(fun)) {
+                final boolean isNative = scope instanceof NativeCall;
+                final boolean hasFeature = cx.hasFeature(Context.FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE);
+
+                if (!lastEvalTopCalled_ && (!hasFeature || !isNative)) {
+                    scope = thisObj;
+                }
                 return evalSpecial(cx, scope, callerThis, args,
                                    filename, lineNumber);
             }
@@ -2686,6 +2710,10 @@ public class ScriptRuntime {
             return "number";
         if (value instanceof Boolean)
             return "boolean";
+        if (value instanceof MemberBox)
+            return typeof(((MemberBox) value).member());
+        if (value instanceof Method)
+            return "function";
         throw errorWithClassName("msg.invalid.type", value);
     }
 
@@ -3355,13 +3383,14 @@ public class ScriptRuntime {
                 // Don't overwrite existing def if already defined in object
                 // or prototypes of object.
                 if (!ScriptableObject.hasProperty(scope, name)) {
-                    if (isConst) {
-                        ScriptableObject.defineConstProperty(varScope, name);
-                    } else if (!evalScript) {
+                    if (!evalScript) {
                         // Global var definitions are supposed to be DONTDELETE
-                        ScriptableObject.defineProperty(
-                            varScope, name, Undefined.instance,
-                            ScriptableObject.PERMANENT);
+                        if (isConst)
+                            ScriptableObject.defineConstProperty(varScope, name);
+                        else
+                            ScriptableObject.defineProperty(
+                                varScope, name, Undefined.instance,
+                                ScriptableObject.PERMANENT);
                     } else {
                         varScope.put(name, varScope, Undefined.instance);
                     }
