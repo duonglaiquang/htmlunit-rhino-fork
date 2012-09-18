@@ -2876,6 +2876,9 @@ switch (op) {
     private static void enterFrame(Context cx, CallFrame frame, Object[] args,
                                    boolean continuationRestart)
     {
+    	if (frame.parentFrame != null && !frame.parentFrame.fnOrScript.isScript())
+    		frame.fnOrScript.defaultPut("caller", frame.parentFrame.fnOrScript);
+
         boolean usesActivation = frame.idata.itsNeedsActivation;
         boolean isDebugged = frame.debuggerFrame != null;
         if(usesActivation || isDebugged) {
@@ -2925,6 +2928,8 @@ switch (op) {
     private static void exitFrame(Context cx, CallFrame frame,
                                   Object throwable)
     {
+		frame.fnOrScript.delete("caller");
+
         if (frame.idata.itsNeedsActivation) {
             ScriptRuntime.exitActivationFunction(cx);
         }

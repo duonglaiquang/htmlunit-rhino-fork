@@ -1035,7 +1035,10 @@ public class ScriptRuntime {
     public static Scriptable toObjectOrNull(Context cx, Object obj,
                                             Scriptable scope)
     {
-        if (obj instanceof Scriptable) {
+    	if (obj instanceof Delegator) {
+    		return ((Delegator) obj).getDelegee();
+    	}
+    	else if (obj instanceof Scriptable) {
             return (Scriptable)obj;
         } else if (obj != null && obj != Undefined.instance) {
             return toObject(cx, scope, obj);
@@ -2741,6 +2744,8 @@ public class ScriptRuntime {
             return "undefined";
         if (value instanceof ScriptableObject)
         	return ((ScriptableObject) value).getTypeOf();
+        if (value instanceof Delegator)
+            return typeof(((Delegator) value).getDelegee());
         if (value instanceof Scriptable)
             return (value instanceof Callable) ? "function" : "object";
         if (value instanceof CharSequence)
@@ -4091,20 +4096,24 @@ public class ScriptRuntime {
 
     public static RuntimeException undefReadError(Object object, Object id)
     {
-        return typeError2("msg.undef.prop.read", toString(object), toString(id));
+        final String idStr = toString(id);
+        return typeError2("msg.undef.prop.read", toString(object), idStr);
     }
 
     public static RuntimeException undefCallError(Object object, Object id)
     {
-        return typeError2("msg.undef.method.call", toString(object), toString(id));
+        final String idStr = toString(id);
+        return typeError2("msg.undef.method.call", toString(object), idStr);
     }
 
     public static RuntimeException undefWriteError(Object object,
                                                    Object id,
                                                    Object value)
     {
-        return typeError3("msg.undef.prop.write", toString(object), toString(id),
-                          toString(value));
+        final String idStr = toString(id);
+        final String valueStr = toString(value);
+        return typeError3("msg.undef.prop.write", toString(object), idStr,
+                          valueStr);
     }
 
     private static RuntimeException undefDeleteError(Object object, Object id)

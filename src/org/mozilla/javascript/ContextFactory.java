@@ -288,6 +288,13 @@ public class ContextFactory
 
           case Context.FEATURE_ENUMERATE_IDS_FIRST:
               return cx.getLanguageVersion() >= Context.VERSION_ES6;
+
+          case Context.FEATURE_HTMLUNIT_WRITE_READONLY_PROPERTIES:
+            return false;
+
+          case Context.FEATURE_HTMLUNIT_JS_CATCH_JAVA_EXCEPTION:
+              return true;
+
         }
         // It is a bug to call the method with unknown featureIndex
         throw new IllegalArgumentException(String.valueOf(featureIndex));
