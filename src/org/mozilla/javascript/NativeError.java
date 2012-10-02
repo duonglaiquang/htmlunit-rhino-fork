@@ -161,7 +161,7 @@ final class NativeError extends IdScriptableObject
         // generated on demand, is cached after the first access, and is
         // overwritable like an ordinary property. Hence this setup with
         // the getter and setter below.
-        if (stackProvider == null) {
+        if (stackProvider == null && Context.getContext().hasFeature(Context.FEATURE_HTMLUNIT_ERROR_STACK)) {
             stackProvider = re;
             defineProperty("stack", this,
                            ERROR_DELEGATE_GET_STACK, ERROR_DELEGATE_SET_STACK,
