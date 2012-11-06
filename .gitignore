@@ -15,5 +15,7 @@ out/
 target/
 .gradle
 
+.project
+.classpath
 
 *~
