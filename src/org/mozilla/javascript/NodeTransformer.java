@@ -84,6 +84,7 @@ public class NodeTransformer
                     else {
                         parent.removeChild(node);
                         if (lastInitialName == null)  {
+                            lastInitialName = node;
                             parent.addChildToFront(node);
                         }
                         else {
