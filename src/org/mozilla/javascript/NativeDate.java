@@ -1270,7 +1270,7 @@ final class NativeDate extends IdScriptableObject
           case Id_toLocaleDateString:
             if (localeDateFormatter == null) {
                 localeDateFormatter
-                    = DateFormat.getDateInstance(DateFormat.LONG);
+                    = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
             }
             formatter = localeDateFormatter;
             break;
