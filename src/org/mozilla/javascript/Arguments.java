@@ -14,7 +14,7 @@ package org.mozilla.javascript;
  * @see org.mozilla.javascript.NativeCall
  * @author Norris Boyd
  */
-final class Arguments extends IdScriptableObject
+class Arguments extends IdScriptableObject
 {
     static final long serialVersionUID = 4275508002492040609L;
 
@@ -46,6 +46,21 @@ final class Arguments extends IdScriptableObject
         defineProperty(NativeSymbol.ITERATOR_PROPERTY, iteratorMethod, ScriptableObject.DONTENUM);
     }
 
+    public Arguments(final Arguments original) {
+        this.activation = original.activation;
+
+        setParentScope(original.getParentScope());
+        setPrototype(original.getPrototype());
+
+        args = original.args;
+        lengthObj = original.lengthObj;
+        calleeObj = original.calleeObj;
+
+        constructor = original.constructor;
+        callerObj = original.callerObj;
+    }
+    
+    
     @Override
     public String getClassName()
     {
@@ -150,9 +165,6 @@ final class Arguments extends IdScriptableObject
     @Override
     public void put(int index, Scriptable start, Object value)
     {
-        if (Context.getCurrentContext().hasFeature(Context.FEATURE_HTMLUNIT_ARGUMENTS_IS_READ_ONLY)) {
-            return;
-        }
         if (arg(index) == NOT_FOUND) {
           super.put(index, start, value);
         } else {
