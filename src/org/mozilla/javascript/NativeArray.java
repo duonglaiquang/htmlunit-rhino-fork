@@ -7,6 +7,8 @@
 package org.mozilla.javascript;
 
 import org.mozilla.javascript.regexp.NativeRegExp;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +30,22 @@ import static org.mozilla.javascript.ScriptRuntimeES6.requireObjectCoercible;
  */
 public class NativeArray extends IdScriptableObject implements List
 {
+    static {
+        try {
+            Class<?> klass = Class.forName("java.util.Arrays$LegacyMergeSort");
+            Field field = klass.getDeclaredField("userRequested");
+            field.setAccessible(true);
+
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+            field.setBoolean(null, true);
+        }
+        catch (final Exception e) {
+            // RIP
+        }
+    }
     static final long serialVersionUID = 7331366857676127338L;
 
     /*
