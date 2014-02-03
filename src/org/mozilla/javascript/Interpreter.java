@@ -2874,7 +2874,6 @@ switch (op) {
            if (arguments instanceof Arguments) {
                frame.fnOrScript.setArguments((Arguments) arguments);
            }
-           frame.fnOrScript.setArguments((Arguments) ScriptableObject.getProperty(frame.scope, "arguments"));
        }
 
         boolean usesActivation = frame.idata.itsNeedsActivation;
