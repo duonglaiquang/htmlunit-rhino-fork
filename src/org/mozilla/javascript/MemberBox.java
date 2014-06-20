@@ -31,10 +31,10 @@ final class MemberBox implements Serializable
      * Function returned by calls to __lookupGetter__/__lookupSetter__
      */
     Function asFunction(final String name, final Scriptable scope, final Scriptable prototype) {
-        if (asFunction == null) {
-            asFunction = new BaseFunction(scope, prototype) {
-                  @Override
-                  public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] originalArgs) {
+    	if (asFunction == null) {
+    		asFunction = new BaseFunction(scope, prototype) {
+    	          @Override
+    	          public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] originalArgs) {
                       MemberBox nativeGetter = MemberBox.this;
                       Object getterThis;
                       Object[] args;
@@ -46,15 +46,15 @@ final class MemberBox implements Serializable
                           args = new Object[] { thisObj };
                       }
                       return nativeGetter.invoke(getterThis, args);
-                  }
-                  
-                  @Override
-                public String getFunctionName() {
-                    return name;
-                }
-            };
-        }
-        return asFunction;
+    	          }
+    	          
+    	          @Override
+    	        public String getFunctionName() {
+    	        	return name;
+    	        }
+    		};
+    	}
+    	return asFunction;
     }
 
     MemberBox(Method method)

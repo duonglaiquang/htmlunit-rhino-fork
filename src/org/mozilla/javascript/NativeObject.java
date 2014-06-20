@@ -259,9 +259,9 @@ public class NativeObject extends IdScriptableObject implements Map
                           break;
                   }
                   if (gs != null) {
-                      if (gs instanceof MemberBox) {
-                          gs = ((MemberBox) gs).asFunction(name, f.getParentScope(), f.getPrototype());
-                      }
+                	  if (gs instanceof MemberBox) {
+                		  gs = ((MemberBox) gs).asFunction(name, f.getParentScope(), f.getPrototype());
+                	  }
                       return gs;
                   }
               }
