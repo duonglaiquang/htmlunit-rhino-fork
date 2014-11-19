@@ -74,7 +74,7 @@ final class NativeBoolean extends IdScriptableObject
             } else {
                 b = args[0] instanceof ScriptableObject &&
                         ((ScriptableObject) args[0]).avoidObjectDetection()
-                    ? true
+                    ? false
                     : ScriptRuntime.toBoolean(args[0]);
             }
             if (thisObj == null) {
