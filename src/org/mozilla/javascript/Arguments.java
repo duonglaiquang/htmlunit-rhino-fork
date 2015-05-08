@@ -56,7 +56,6 @@ class Arguments extends IdScriptableObject
         lengthObj = original.lengthObj;
         calleeObj = original.calleeObj;
 
-        constructor = original.constructor;
         callerObj = original.callerObj;
     }
     

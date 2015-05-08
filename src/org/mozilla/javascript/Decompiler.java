@@ -311,8 +311,6 @@ public class Decompiler
         }
 
         if (!toSource) {
-            // add an initial newline to exactly match js.
-            result.append('\n');
             for (int j = 0; j < indent; j++)
                 result.append(' ');
         } else {
@@ -806,11 +804,7 @@ public class Decompiler
             ++i;
         }
 
-        if (!toSource) {
-            // add that trailing newline if it's an outermost function.
-            if (!justFunctionBody)
-                result.append('\n');
-        } else {
+        if (toSource) {
             if (topFunctionType == FunctionNode.FUNCTION_EXPRESSION) {
                 result.append(')');
             }
