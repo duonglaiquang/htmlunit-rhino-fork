@@ -290,7 +290,7 @@ public class Context
      * This includes support for typed arrays. Default is true.
      * @since 1.7 Release 3
      */
-    public static final int FEATURE_V8_EXTENSIONS = 140;
+    public static final int FEATURE_V8_EXTENSIONS = 14;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -303,7 +303,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_ASK_OBJECT_TO_WRITE_READONLY = 14;
+    public static final int FEATURE_HTMLUNIT_ASK_OBJECT_TO_WRITE_READONLY = 100;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -359,7 +359,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 18;
+    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 104;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -368,7 +368,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE = 19;
+    public static final int FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -377,7 +377,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 20;
+    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 106;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -386,7 +386,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_CONSTRUCTOR = 21;
+    public static final int FEATURE_HTMLUNIT_CONSTRUCTOR = 107;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -396,7 +396,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_OBJECT_METHOD = 22;
+    public static final int FEATURE_HTMLUNIT_FUNCTION_OBJECT_METHOD = 108;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -405,7 +405,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 23;
+    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 109;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -414,7 +414,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_PARSE_INT_RADIX_10 = 24;
+    public static final int FEATURE_HTMLUNIT_PARSE_INT_RADIX_10 = 110;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -423,7 +423,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 25;
+    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 111;
 
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
