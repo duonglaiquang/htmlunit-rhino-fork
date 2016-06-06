@@ -72,6 +72,8 @@ public class NativeObject extends IdScriptableObject implements Map
                 "seal", 1);
         addIdFunctionProperty(ctor, OBJECT_TAG, ConstructorId_freeze,
                 "freeze", 1);
+        addIdFunctionProperty(ctor, OBJECT_TAG, ConstructorId_assign,
+                "assign", 2);
         super.fillConstructorProperties(ctor);
     }
 
@@ -418,6 +420,17 @@ public class NativeObject extends IdScriptableObject implements Map
 
                 return obj;
               }
+          case ConstructorId_assign:
+              {
+                  ScriptableObject target = ensureScriptableObject(args[0]);
+                  for (int i = 1; i < args.length; i++) {
+                      ScriptableObject obj = ensureScriptableObject(args[i]);
+                      for (Object objId : obj.getIds()) {
+                          target.defineOwnProperty(cx, objId, obj.getOwnPropertyDescriptor(cx, objId));
+                      }
+                  }
+                  return target;
+              }
 
 
           default:
@@ -675,12 +688,13 @@ public class NativeObject extends IdScriptableObject implements Map
         ConstructorId_defineProperty = -5,
         ConstructorId_isExtensible = -6,
         ConstructorId_preventExtensions = -7,
-        ConstructorId_defineProperties= -8,
+        ConstructorId_defineProperties = -8,
         ConstructorId_create = -9,
         ConstructorId_isSealed = -10,
         ConstructorId_isFrozen = -11,
         ConstructorId_seal = -12,
         ConstructorId_freeze = -13,
+        ConstructorId_assign = -14,
 
         Id_constructor           = 1,
         Id_toString              = 2,
