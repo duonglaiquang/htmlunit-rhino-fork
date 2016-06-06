@@ -424,9 +424,11 @@ public class NativeObject extends IdScriptableObject implements Map
               {
                   ScriptableObject target = ensureScriptableObject(args[0]);
                   for (int i = 1; i < args.length; i++) {
-                      ScriptableObject obj = ensureScriptableObject(args[i]);
-                      for (Object objId : obj.getIds()) {
-                          target.defineOwnProperty(cx, objId, obj.getOwnPropertyDescriptor(cx, objId));
+                      if (args[i] != Undefined.instance) {
+                          ScriptableObject obj = ensureScriptableObject(args[i]);
+                          for (Object objId : obj.getIds()) {
+                              target.defineOwnProperty(cx, objId, obj.getOwnPropertyDescriptor(cx, objId));
+                          }
                       }
                   }
                   return target;
