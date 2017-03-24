@@ -317,7 +317,10 @@ public class ContextFactory
             return true;
 
           case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
-              return false;
+            return false;
+
+          case Context.FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING:
+            return true;
         }
         // It is a bug to call the method with unknown featureIndex
         throw new IllegalArgumentException(String.valueOf(featureIndex));

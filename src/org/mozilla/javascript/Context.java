@@ -404,6 +404,15 @@ public class Context
      */
     public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 111;
 
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Indicates that {@code Object.getPrototypeOf('')} is allowed
+     *
+     * By default {@link #hasFeature(int)} returns true.
+     */
+    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 112;
+
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
 
