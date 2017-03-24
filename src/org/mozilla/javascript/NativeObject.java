@@ -272,7 +272,19 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_getPrototypeOf:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+
+                if (arg instanceof String) {
+                    return "";
+                }
+                else if (arg instanceof Number) {
+                    return 0;
+                }
+                else if (arg instanceof Boolean) {
+                    return false;
+                }
+
                 Scriptable obj = getCompatibleObject(cx, scope, arg);
+
                 return obj.getPrototype();
               }
           case ConstructorId_keys:
