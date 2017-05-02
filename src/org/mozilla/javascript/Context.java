@@ -373,7 +373,7 @@ public class Context
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that 'exception' (technically NativeError) exposes "stack" property.
+     * Indicates that 'exception' (technically NativeError) always exposes "stack" property.
      *
      * By default {@link #hasFeature(int)} returns true.
      */

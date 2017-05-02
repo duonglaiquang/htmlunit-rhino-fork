@@ -1011,6 +1011,11 @@ switch (op) {
     }
     case Token.THROW: {
         Object value = stack[stackTop];
+        if (value instanceof NativeError) {
+            EcmaError er = ScriptRuntime.constructError("", "");
+            ((NativeError) value).setStackProvider(er);
+        }
+
         if (value == DBL_MRK) value = ScriptRuntime.wrapNumber(sDbl[stackTop]);
         --stackTop;
 
