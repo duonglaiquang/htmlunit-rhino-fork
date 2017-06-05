@@ -145,7 +145,16 @@ final class MemberBox implements Serializable
     @Override
     public String toString()
     {
-        return memberObject.toString();
+        Context context = Context.getCurrentContext();
+        if (!context.hasFeature(Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME)) {
+            return "function () { [native code] }";
+        }
+        String name = memberObject.getName();
+        name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+        if (context.hasFeature(Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE)) {
+            return "\nfunction " + name + "() {\n    [native code]\n}\n";
+        }
+        return "function " + name + "() {\n    [native code]\n}";
     }
 
     Object invoke(Object target, Object[] args)
