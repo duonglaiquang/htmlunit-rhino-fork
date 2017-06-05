@@ -413,6 +413,24 @@ public class Context
      */
     public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 112;
 
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Indicates that {@code MemberBox.toString()} contains property name.
+     *
+     * By default {@link #hasFeature(int)} returns true.
+     */
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 113;
+
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Indicates that {@code MemberBox.toString()} starts with new line.
+     *
+     * By default {@link #hasFeature(int)} returns true.
+     */
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 114;
+
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
 

@@ -1945,12 +1945,12 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
     protected void checkPropertyDefinition(ScriptableObject desc) {
         Object getter = getProperty(desc, "get");
         if (getter != NOT_FOUND && getter != Undefined.instance
-                && !(getter instanceof Callable)) {
+                && !(getter instanceof Callable) && !(getter instanceof MemberBox)) {
             throw ScriptRuntime.notFunctionError(getter);
         }
         Object setter = getProperty(desc, "set");
         if (setter != NOT_FOUND && setter != Undefined.instance
-                && !(setter instanceof Callable)) {
+                && !(setter instanceof Callable) && !(setter instanceof MemberBox)) {
             throw ScriptRuntime.notFunctionError(setter);
         }
         if (isDataDescriptor(desc) && isAccessorDescriptor(desc)) {
