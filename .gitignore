@@ -14,7 +14,9 @@ buildGradle
 out/
 target/
 .gradle
-
+.classpath
+.project
+.settings/
 
 *~
 

@@ -265,6 +265,7 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
                         // Based on TC39 ES3.1 Draft of 9-Feb-2009, 8.12.4, step 2,
                         // we should throw a TypeError in this case.
                         cx.hasFeature(Context.FEATURE_STRICT_MODE)) {
+
                         throw ScriptRuntime.typeError3("msg.set.prop.no.setter", name, start.getClassName(), Context.toString(value));
                     }
                     if (Context.getContext().hasFeature(Context.FEATURE_HTMLUNIT_ASK_OBJECT_TO_WRITE_READONLY)) {

@@ -105,6 +105,7 @@ class CodeGenerator extends Icode {
         if (theFunction.isInStrictMode()) {
             itsData.isStrict = true;
         }
+
         itsData.declaredAsVar = (theFunction.getParent() instanceof VariableInitializer);
 
         generateICodeFromTree(theFunction.getLastChild());
