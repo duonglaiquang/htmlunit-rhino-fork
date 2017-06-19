@@ -3508,8 +3508,9 @@ public class ScriptRuntime {
                             if (funObj instanceof InterpretedFunction) {
                                 InterpreterData idata = ((InterpretedFunction) funObj).idata;
                                 for (int f = 0; f < idata.getFunctionCount(); f++) {
-                                    InterpreterData intFun = (InterpreterData) idata.getFunction(f);
-                                    if (!intFun.declaredAsFunctionExpression && name.equals(intFun.getFunctionName())) {
+                                    InterpreterData functionData = (InterpreterData) idata.getFunction(f);
+                                    if (!functionData.declaredAsFunctionExpression
+                                            && name.equals(functionData.getFunctionName())) {
                                         define = false;
                                         break;
                                     }

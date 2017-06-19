@@ -71,7 +71,8 @@ public final class NativeCall extends IdScriptableObject
                             InterpreterData idata = ((InterpretedFunction) function).idata;
                             for (int f = 0; f < idata.getFunctionCount(); f++) {
                                 final InterpreterData functionData = (InterpreterData) idata.getFunction(f);
-								if (name.equals(functionData.getFunctionName())) {
+                                if (!functionData.declaredAsFunctionExpression
+                                        && name.equals(functionData.getFunctionName())) {
                                     define = functionData.declaredAsVar; // define local property only for inner functions declared with var
                                     break;
                                 }
