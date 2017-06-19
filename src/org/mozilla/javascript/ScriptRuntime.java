@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.mozilla.javascript.ast.FunctionNode;
+import org.mozilla.javascript.debug.DebuggableScript;
 import org.mozilla.javascript.v8dtoa.DoubleConversion;
 import org.mozilla.javascript.v8dtoa.FastDtoa;
 import org.mozilla.javascript.xml.XMLLib;
@@ -3507,7 +3508,8 @@ public class ScriptRuntime {
                             if (funObj instanceof InterpretedFunction) {
                                 InterpreterData idata = ((InterpretedFunction) funObj).idata;
                                 for (int f = 0; f < idata.getFunctionCount(); f++) {
-                                    if (name.equals(idata.getFunction(f).getFunctionName())) {
+                                    InterpreterData intFun = (InterpreterData) idata.getFunction(f);
+                                    if (!intFun.declaredAsFunctionExpression && name.equals(intFun.getFunctionName())) {
                                         define = false;
                                         break;
                                     }
