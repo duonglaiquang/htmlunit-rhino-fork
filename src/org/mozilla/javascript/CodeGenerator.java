@@ -199,7 +199,7 @@ class CodeGenerator extends Icode {
             array[i] = gen.itsData;
             if (fn.getParent() instanceof FunctionCall) {
                 AstNode grandParent = fn.getParent().getParent();
-                if (grandParent instanceof UnaryExpression && ((UnaryExpression) grandParent).getType() == Token.NOT) {
+                if (grandParent instanceof UnaryExpression && grandParent.getType() == Token.NOT) {
                     gen.itsData.declaredAsFunctionExpression = true;
                 }
             }
