@@ -273,16 +273,6 @@ public class NativeObject extends IdScriptableObject implements Map
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
 
-                if (arg instanceof String) {
-                    return "";
-                }
-                else if (arg instanceof Number) {
-                    return 0;
-                }
-                else if (arg instanceof Boolean) {
-                    return false;
-                }
-
                 if (cx.hasFeature(Context.FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING)) {
                     if (arg instanceof String) {
                         return "";
