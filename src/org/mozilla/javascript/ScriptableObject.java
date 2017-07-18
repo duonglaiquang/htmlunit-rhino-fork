@@ -3227,7 +3227,13 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
 
     protected ScriptableObject getOwnPropertyDescriptor(Context cx, Object id) {
         Slot slot = getSlot(cx, id, SLOT_QUERY);
-        if (slot == null) return null;
+        if (slot == null) {
+        	Object prototype = getPrototype();
+        	if (prototype != null) {
+        		return ((ScriptableObject) prototype).getOwnPropertyDescriptor(cx, id);
+        	}
+        	return null;
+        }
         Scriptable scope = getParentScope();
         return slot.getPropertyDescriptor(cx, (scope == null ? this : scope));
     }
