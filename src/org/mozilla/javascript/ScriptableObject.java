@@ -2105,12 +2105,19 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
     }
 
     protected static Scriptable ensureScriptable(Object arg) {
+        if (arg instanceof Delegator) {
+            arg = ((Delegator) arg).getDelegee();
+        }
+
         if ( !(arg instanceof Scriptable) )
             throw ScriptRuntime.typeError1("msg.arg.not.object", ScriptRuntime.typeof(arg));
         return (Scriptable) arg;
     }
 
     protected static ScriptableObject ensureScriptableObject(Object arg) {
+        if (arg instanceof Delegator) {
+            arg = ((Delegator) arg).getDelegee();
+        }
         if ( !(arg instanceof ScriptableObject) )
             throw ScriptRuntime.typeError1("msg.arg.not.object", ScriptRuntime.typeof(arg));
         return (ScriptableObject) arg;
