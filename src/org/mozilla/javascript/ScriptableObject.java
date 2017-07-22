@@ -2109,10 +2109,7 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
             return (Scriptable) arg;
         }
         if (arg instanceof Delegator) {
-            arg = ((Delegator) arg).getDelegee();
-            if (arg instanceof Scriptable) {
-                return (Scriptable) arg;
-            }
+            return (Scriptable) ((Delegator) arg).getDelegee();
         }
         throw ScriptRuntime.typeError1("msg.arg.not.object", ScriptRuntime.typeof(arg));
     }
@@ -2122,10 +2119,7 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
             return (ScriptableObject) arg;
         }
         if (arg instanceof Delegator) {
-            arg = ((Delegator) arg).getDelegee();
-            if (arg instanceof ScriptableObject) {
-                return (ScriptableObject) arg;
-            }
+            return (ScriptableObject) ((Delegator) arg).getDelegee();
         }
         throw ScriptRuntime.typeError1("msg.arg.not.object", ScriptRuntime.typeof(arg));
     }
