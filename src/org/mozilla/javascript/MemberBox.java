@@ -6,8 +6,15 @@
 
 package org.mozilla.javascript;
 
-import java.lang.reflect.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Wrappper class for Method and Constructor instances to cache
@@ -196,7 +203,7 @@ final class MemberBox implements Serializable
             if (e instanceof ContinuationPending)
                 throw (ContinuationPending) e;
 
-            if (e instanceof RhinoException || Context.getCurrentContext().hasFeature(Context.FEATURE_HTMLUNIT_JS_CATCH_JAVA_EXCEPTION))
+            if (e instanceof RhinoException)
                 throw Context.throwAsScriptRuntimeEx(e);            
             else
             	throw new RuntimeException("Exception invoking " + method.getName(), e);

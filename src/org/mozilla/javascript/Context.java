@@ -293,27 +293,6 @@ public class Context
     public static final int FEATURE_V8_EXTENSIONS = 14;
 
     /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * The same web browser (e.g. FF) may allow setting read-only property, 
-     * ignores setting the read-only property, or even throw an exception.
-     *
-     * So, by having this feature, ScriptableObject itself is asked throw
-     * {@link ScriptableObject#isReadOnlySettable} whether to allow, ignore or throw an exception.
-     *
-     * By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_ASK_OBJECT_TO_WRITE_READONLY = 100;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     * Indicates if a JavaScript catch statement can catch Java exceptions
-     * (exceptions occurring in host objects).
-     * By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_JS_CATCH_JAVA_EXCEPTION = 1155;
-
-    /**
      * Defines how an undefined  "this" parameter is handled in certain calls. Previously Rhino
      * would convert an undefined "this" to null, whereas recent specs call for it to be treated
      * differently. Default is to be set if language version <= 1.7.
@@ -332,43 +311,12 @@ public class Context
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Is the default value of {@link Arguments} "Object" or "Arguments"
-     *
-     * By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_ARGUMENTS_IS_OBJECT = 116;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * When setting the function name to call, call thisObject.setter.
-     *
-     * This is needed for something like "function onclick() {onclick = null}"
-     *
-     * Implemented by transforming it into "function onclick() {<b>this.</b>onclick = null}"
-     *
-     * By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_NULL_SETTER = 117;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
      * Whether the "someFunc.arguments" is a read-only view of the function argument
      * or the real arguments.
      *
      * By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 104;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * Indicates that 'eval' function should have access to the local function scope.
-     *
-     * By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -382,39 +330,11 @@ public class Context
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that ".constructor" property is defined for all {@link ScriptableObject}s.
-     *
-     * By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_CONSTRUCTOR = 107;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * Indicates that function can be defined as
-     * <code>function object.property() {}</code> instead of <code>object.property = function() {}</code>.
-     *
-     * By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_OBJECT_METHOD = 108;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
      * Indicates that function is defined even before its declaration, inside a block.
      *
      * By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 109;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * Indicates that parseInt() should have radix 10 by default.
-     *
-     * By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_PARSE_INT_RADIX_10 = 110;
 
     /**
      * Special to HtmlUnit's Rhino fork.

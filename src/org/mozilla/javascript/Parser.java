@@ -809,19 +809,12 @@ public class Parser
                 }
             }
             if (!matchToken(Token.LP)) {
-                if (Context.getContext().hasFeature(Context.FEATURE_HTMLUNIT_FUNCTION_OBJECT_METHOD)
-                        && matchToken(Token.DOT) && matchToken(Token.NAME)) {
-                    name.setIdentifier(name.getIdentifier() + '.' + createNameNode(true, Token.NAME).getIdentifier());
-                    mustMatchToken(Token.LP, "msg.no.paren.parms");
+                if (compilerEnv.isAllowMemberExprAsFunctionName()) {
+                    AstNode memberExprHead = name;
+                    name = null;
+                    memberExprNode = memberExprTail(false, memberExprHead);
                 }
-                else {
-                    if (compilerEnv.isAllowMemberExprAsFunctionName()) {
-                        AstNode memberExprHead = name;
-                        name = null;
-                        memberExprNode = memberExprTail(false, memberExprHead);
-                    }
-                    mustMatchToken(Token.LP, "msg.no.paren.parms");
-                }
+                mustMatchToken(Token.LP, "msg.no.paren.parms");
             }
         } else if (matchToken(Token.LP)) {
             // Anonymous function:  leave name as null

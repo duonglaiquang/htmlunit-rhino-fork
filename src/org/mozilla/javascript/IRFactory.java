@@ -379,8 +379,7 @@ public final class IRFactory extends Parser
         AstNode right = node.getRight();
 
         if (right.getType() == Token.NULL && node.getType() == Token.ASSIGN
-                && left instanceof Name && right instanceof KeywordLiteral
-                && Context.getCurrentContext().hasFeature(Context.FEATURE_HTMLUNIT_FUNCTION_NULL_SETTER)) {
+                && left instanceof Name && right instanceof KeywordLiteral) {
 
             final String identifier = ((Name) left).getIdentifier();
             for (AstNode p = node.getParent(); p != null; p = p.getParent()) {

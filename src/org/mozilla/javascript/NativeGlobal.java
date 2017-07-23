@@ -243,10 +243,6 @@ public class NativeGlobal implements Serializable, IdFunctionCall
                 if (c == 'x' || c == 'X') {
                     radix = 16;
                     start += 2;
-                } else if ('0' <= c && c <= '9') {
-                    if (!Context.getCurrentContext().hasFeature(Context.FEATURE_HTMLUNIT_PARSE_INT_RADIX_10)) {
-                        radix = 8;
-                    }
                 }
             }
         }

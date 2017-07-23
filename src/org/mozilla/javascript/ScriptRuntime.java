@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.mozilla.javascript.ast.FunctionNode;
-import org.mozilla.javascript.debug.DebuggableScript;
 import org.mozilla.javascript.v8dtoa.DoubleConversion;
 import org.mozilla.javascript.v8dtoa.FastDtoa;
 import org.mozilla.javascript.xml.XMLLib;
@@ -2621,10 +2620,7 @@ public class ScriptRuntime {
     {
         if (callType == Node.SPECIALCALL_EVAL) {
             if (thisObj.getParentScope() == null && NativeGlobal.isEvalFunction(fun)) {
-                final boolean isNative = scope instanceof NativeCall;
-                final boolean hasFeature = cx.hasFeature(Context.FEATURE_HTMLUNIT_EVAL_LOCAL_SCOPE);
-
-                if (!lastEvalTopCalled_ && (!hasFeature || !isNative)) {
+                if (!lastEvalTopCalled_) {
                     scope = thisObj;
                 }
                 return evalSpecial(cx, scope, callerThis, args,
