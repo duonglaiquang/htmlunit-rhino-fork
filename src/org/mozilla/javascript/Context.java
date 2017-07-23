@@ -10,12 +10,21 @@ package org.mozilla.javascript;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -316,7 +325,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 104;
+    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 100;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -325,7 +334,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 106;
+    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 101;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -334,7 +343,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 109;
+    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 102;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -343,7 +352,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 111;
+    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 103;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -352,7 +361,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 112;
+    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 104;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -361,7 +370,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 113;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -370,7 +379,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 114;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 106;
 
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
