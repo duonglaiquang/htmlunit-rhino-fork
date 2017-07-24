@@ -325,7 +325,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 104;
+    public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 101;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -334,7 +334,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 106;
+    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 102;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -343,7 +343,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 109;
+    public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 103;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -352,7 +352,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 111;
+    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 104;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -361,7 +361,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 112;
+    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -370,7 +370,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 113;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 106;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -379,7 +379,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 114;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 107;
 
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
