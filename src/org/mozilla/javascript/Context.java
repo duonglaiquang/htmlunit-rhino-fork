@@ -381,6 +381,15 @@ public class Context
      */
     public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 107;
 
+    /**
+     * Special to HtmlUnit's Rhino fork.
+     *
+     * Indicates that {@code Array} supports constructor properties.
+     *
+     * By default {@link #hasFeature(int)} returns false.
+     */
+    public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 108;
+
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
 

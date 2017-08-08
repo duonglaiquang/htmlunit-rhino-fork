@@ -303,6 +303,9 @@ public class ContextFactory
 
           case Context.FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING:
             return true;
+
+          case Context.FEATURE_HTMLUNIT_ARRAY_PROPERTIES:
+              return false;
         }
         // It is a bug to call the method with unknown featureIndex
         throw new IllegalArgumentException(String.valueOf(featureIndex));
