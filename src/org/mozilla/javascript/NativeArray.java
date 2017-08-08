@@ -199,10 +199,6 @@ public class NativeArray extends IdScriptableObject implements List
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_reduceRight,
                     "reduceRight", 1);
         }
-        addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_find,
-                "find", 1);
-        addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_findIndex,
-                "findIndex", 1);
         addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_isArray,
                 "isArray", 1);
         super.fillConstructorProperties(ctor);
