@@ -43,7 +43,7 @@ class Arguments extends IdScriptableObject
             callerObj = NOT_FOUND;
         }
 
-        defineProperty(NativeSymbol.ITERATOR_PROPERTY, iteratorMethod, ScriptableObject.DONTENUM);
+        defineProperty(SymbolKey.ITERATOR, iteratorMethod, ScriptableObject.DONTENUM);
     }
 
     public Arguments(final Arguments original) {
@@ -300,9 +300,9 @@ class Arguments extends IdScriptableObject
     }
 
     @Override
-    Object[] getIds(boolean getAll)
+    Object[] getIds(boolean getNonEnumerable, boolean getSymbols)
     {
-        Object[] ids = super.getIds(getAll);
+        Object[] ids = super.getIds(getNonEnumerable, getSymbols);
         if (args.length != 0) {
             boolean[] present = new boolean[args.length];
             int extraCount = args.length;
@@ -318,7 +318,7 @@ class Arguments extends IdScriptableObject
                     }
                 }
             }
-            if (!getAll) { // avoid adding args which were redefined to non-enumerable
+            if (!getNonEnumerable) { // avoid adding args which were redefined to non-enumerable
               for (int i = 0; i < present.length; i++) {
                 if (!present[i] && super.has(i, this)) {
                   present[i] = true;
@@ -345,6 +345,9 @@ class Arguments extends IdScriptableObject
 
     @Override
     protected ScriptableObject getOwnPropertyDescriptor(Context cx, Object id) {
+        if (id instanceof Scriptable) {
+           return super.getOwnPropertyDescriptor(cx, id);
+        }
       double d = ScriptRuntime.toNumber(id);
       int index = (int) d;
       if (d != index) {
