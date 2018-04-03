@@ -268,7 +268,7 @@ public abstract class ScriptableObject implements Scriptable,
                         // we should throw a TypeError in this case.
                         cx.hasFeature(Context.FEATURE_STRICT_MODE)) {
 
-                        throw ScriptRuntime.typeError3("msg.set.prop.no.setter", name, start.getClassName(), Context.toString(value));
+                        throw ScriptRuntime.typeError3("msg.set.prop.no.setter", name.toString(), start.getClassName(), Context.toString(value));
                     }
                     Scriptable scriptable = start;
 
@@ -277,7 +277,7 @@ public abstract class ScriptableObject implements Scriptable,
                     }
 
                     if (scriptable instanceof ScriptableObject) {
-                        boolean allowSetting = ((ScriptableObject) scriptable).isReadOnlySettable(name, value);
+                        boolean allowSetting = ((ScriptableObject) scriptable).isReadOnlySettable(name.toString(), value);
                         if (!allowSetting) {
                             return true;
                         }

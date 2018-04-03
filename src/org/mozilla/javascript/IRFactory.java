@@ -31,6 +31,7 @@ import org.mozilla.javascript.ast.GeneratorExpressionLoop;
 import org.mozilla.javascript.ast.IfStatement;
 import org.mozilla.javascript.ast.InfixExpression;
 import org.mozilla.javascript.ast.Jump;
+import org.mozilla.javascript.ast.KeywordLiteral;
 import org.mozilla.javascript.ast.Label;
 import org.mozilla.javascript.ast.LabeledStatement;
 import org.mozilla.javascript.ast.LetNode;
