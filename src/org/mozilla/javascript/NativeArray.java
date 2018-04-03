@@ -7,8 +7,6 @@
 package org.mozilla.javascript;
 
 import org.mozilla.javascript.regexp.NativeRegExp;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,24 +25,6 @@ import static org.mozilla.javascript.ScriptRuntimeES6.requireObjectCoercible;
  */
 public class NativeArray extends IdScriptableObject implements List
 {
-    static {
-        try {
-            // A workaround to change the default sort logic, to allow non-conformant comparison method
-            // this starts to be observed since Java 7
-            Class<?> klass = Class.forName("java.util.Arrays$LegacyMergeSort");
-            Field field = klass.getDeclaredField("userRequested");
-            field.setAccessible(true);
-
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.setBoolean(null, true);
-        }
-        catch (final Exception e) {
-            // RIP
-        }
-    }
     static final long serialVersionUID = 7331366857676127338L;
 
     /*
@@ -275,6 +255,11 @@ public class NativeArray extends IdScriptableObject implements List
               case ConstructorId_findIndex:
               case ConstructorId_reduce:
               case ConstructorId_reduceRight: {
+                // this is a small trick; we will handle all the ConstructorId_xxx calls
+                // the same way the object calls are processed
+                // so we adjust the args, inverting the id and
+                // restarting the method selection
+                // Attention: the implementations have to be aware of this
                 if (args.length > 0) {
                     thisObj = ScriptRuntime.toObject(cx, scope, args[0]);
                     Object[] newArgs = new Object[args.length-1];
@@ -1588,8 +1573,11 @@ public class NativeArray extends IdScriptableObject implements List
     private static Object iterativeMethod(Context cx, IdFunctionObject idFunctionObject, Scriptable scope,
                                           Scriptable thisObj, Object[] args)
     {
+        // execIdCall(..) uses a trick for all the ConstructorId_xxx calls
+        // they are handled like object calls by adjusting the args list
+        // as a result we have to handle ConstructorId_xxx calls (negative id)
+        // the same way and always us the abs value of the id for method selection
         int id = Math.abs(idFunctionObject.methodId());
-
         if (Id_find == id || Id_findIndex == id) thisObj = requireObjectCoercible(cx, thisObj, idFunctionObject);
 
         long length = getLengthProperty(cx, thisObj);

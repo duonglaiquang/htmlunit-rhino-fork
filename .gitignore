@@ -14,9 +14,7 @@ buildGradle
 out/
 target/
 .gradle
-.classpath
-.project
-.settings/
+
 
 *~
 
@@ -24,6 +22,5 @@ target/
 .classpath
 .project
 test262
-/bin/
-
+bin/
 .settings/
