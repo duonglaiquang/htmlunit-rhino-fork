@@ -70,6 +70,8 @@ public class NativeObject extends IdScriptableObject implements Map
                 "freeze", 1);
         addIdFunctionProperty(ctor, OBJECT_TAG, ConstructorId_assign,
                 "assign", 2);
+        addIdFunctionProperty(ctor, OBJECT_TAG, ConstructorId_is,
+                "is", 2);
         super.fillConstructorProperties(ctor);
     }
 
@@ -460,18 +462,41 @@ public class NativeObject extends IdScriptableObject implements Map
                 return obj;
               }
           case ConstructorId_assign:
-              {
-                  ScriptableObject target = ensureScriptableObject(args[0]);
-                  for (int i = 1; i < args.length; i++) {
-                      if (args[i] != Undefined.instance && args[i] != null) {
-                          ScriptableObject obj = ensureScriptableObject(args[i]);
-                          for (Object objId : obj.getIds()) {
-                              target.defineOwnProperty(cx, objId, obj.getOwnPropertyDescriptor(cx, objId));
-                          }
-                      }
-                  }
-                  return target;
+          {
+            if (args.length < 1) {
+              throw ScriptRuntime.typeError1("msg.incompat.call", "assign");
+            }
+            Scriptable t = ScriptRuntime.toObject(cx, thisObj, args[0]);
+            for (int i = 1; i < args.length; i++) {
+              if ((args[i] == null) || Undefined.instance.equals(args[i])) {
+                continue;
               }
+              Scriptable s = ScriptRuntime.toObject(cx, thisObj, args[i]);
+              Object[] ids = s.getIds();
+              for (Object key : ids) {
+                if (key instanceof String) {
+                  Object val = s.get((String) key, t);
+                  if ((val != Scriptable.NOT_FOUND) && (val != Undefined.instance)) {
+                    t.put((String) key, t, val);
+                  }
+                } else if (key instanceof Number) {
+                  int ii = ScriptRuntime.toInt32(key);
+                  Object val = s.get(ii, t);
+                  if ((val != Scriptable.NOT_FOUND) && (val != Undefined.instance)) {
+                    t.put(ii, t, val);
+                  }
+                }
+              }
+            }
+            return t;
+          }
+
+          case ConstructorId_is:
+          {
+            Object a1 = args.length < 1 ? Undefined.instance : args[0];
+            Object a2 = args.length < 2 ? Undefined.instance : args[1];
+            return ScriptRuntime.wrapBoolean(ScriptRuntime.same(a1, a2));
+          }
 
 
           default:
@@ -746,6 +771,7 @@ public class NativeObject extends IdScriptableObject implements Map
         ConstructorId_freeze = -13,
         ConstructorId_getOwnPropertySymbols = -14,
         ConstructorId_assign = -15,
+        ConstructorId_is = -16,
 
         Id_constructor           = 1,
         Id_toString              = 2,
