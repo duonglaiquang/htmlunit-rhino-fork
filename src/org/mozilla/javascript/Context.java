@@ -1470,8 +1470,7 @@ public class Context
      * @return whether the source is ready for compilation
      * @since 1.4 Release 2
      */
-    public final boolean stringIsCompilableUnit(String source)
-    {
+    public final boolean stringIsCompilableUnit(String source) {
         boolean errorseen = false;
         CompilerEnvirons compilerEnv = new CompilerEnvirons();
         compilerEnv.initFromContext(this);
@@ -1487,10 +1486,7 @@ public class Context
         // Return false only if an error occurred as a result of reading past
         // the end of the file, i.e. if the source could be fixed by
         // appending more source.
-        if (errorseen && p.eof())
-            return false;
-        else
-            return true;
+        return !(errorseen && p.eof());
     }
 
     /**

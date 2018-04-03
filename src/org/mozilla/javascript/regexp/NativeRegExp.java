@@ -158,7 +158,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
     @Override
     public String getTypeOf()
     {
-    	return "object";
+        return "object";
     }
 
     public Object call(Context cx, Scriptable scope, Scriptable thisObj,
@@ -607,7 +607,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
                     break;
                 case 'u':
                     nDigits += 2;
-                    // fall thru...
+                    // fallthru
                 case 'x':
                     n = 0;
                     for (i = 0; (i < nDigits) && (index < end); i++) {
@@ -949,9 +949,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
                 /* UnicodeEscapeSequence */
                 case 'u':
                     nDigits += 2;
-                    // fall thru...
-                /* HexEscapeSequence */
-                case 'x':
+                /* fallthru */ case 'x':  /* HexEscapeSequence */
                     {
                         int n = 0;
                         int i;
@@ -1602,7 +1600,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
                     break;
                 case 'u':
                     nDigits += 2;
-                    // fall thru
+                    // fallthru
                 case 'x':
                     n = 0;
                     for (i = 0; (i < nDigits) && (src < end); i++) {
@@ -2402,7 +2400,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
             gData.cp = i;
             gData.skipped = i - start;
             for (int j = 0; j < re.parenCount; j++) {
-                gData.parens[j] = -1l;
+                gData.parens[j] = -1L;
             }
             boolean result = executeREBytecode(gData, input, end);
 

@@ -347,21 +347,21 @@ public class ScriptRuntime {
      */
     static boolean isStrWhiteSpaceChar(int c)
     {
-    	switch (c) {
-    		case ' ': // <SP>
-    		case '\n': // <LF>
-    		case '\r': // <CR>
-    		case '\t': // <TAB>
-    		case '\u00A0': // <NBSP>
-    		case '\u000C': // <FF>
-    		case '\u000B': // <VT>
-    		case '\u2028': // <LS>
-    		case '\u2029': // <PS>
-        case '\uFEFF': // <BOM>
-    			return true;
-    		default:
-    			return Character.getType(c) == Character.SPACE_SEPARATOR;
-    	}
+        switch (c) {
+            case ' ': // <SP>
+            case '\n': // <LF>
+            case '\r': // <CR>
+            case '\t': // <TAB>
+            case '\u00A0': // <NBSP>
+            case '\u000C': // <FF>
+            case '\u000B': // <VT>
+            case '\u2028': // <LS>
+            case '\u2029': // <PS>
+            case '\uFEFF': // <BOM>
+                return true;
+            default:
+                return Character.getType(c) == Character.SPACE_SEPARATOR;
+        }
     }
 
     public static Boolean wrapBoolean(boolean b)
@@ -1463,7 +1463,7 @@ public class ScriptRuntime {
     @Deprecated
     public static Object getObjectElem(Object obj, Object elem, Context cx)
     {
-    	return getObjectElem(obj, elem, cx, getTopCallScope(cx));
+        return getObjectElem(obj, elem, cx, getTopCallScope(cx));
     }
 
     /**
@@ -2787,7 +2787,7 @@ public class ScriptRuntime {
         if (value == Undefined.instance)
             return "undefined";
         if (value instanceof ScriptableObject)
-        	return ((ScriptableObject) value).getTypeOf();
+            return ((ScriptableObject) value).getTypeOf();
         if (value instanceof Delegator)
             return typeof(((Delegator) value).getDelegee());
         if (value instanceof Scriptable)
@@ -3464,7 +3464,7 @@ public class ScriptRuntime {
 
     public static void addInstructionCount(Context cx, int instructionsToAdd)
     {
-    	cx.instructionCount += instructionsToAdd;
+        cx.instructionCount += instructionsToAdd;
         if (cx.instructionCount > cx.instructionThreshold)
         {
             cx.observeInstructionCount(cx.instructionCount);
@@ -4447,7 +4447,7 @@ public class ScriptRuntime {
       int[] linep = { 0 };
       String filename = Context.getSourcePositionFromStack(linep);
       final Scriptable error =  cx.newObject(scope, constructorName,
-    		  new Object[] { message, filename, Integer.valueOf(linep[0]) });
+        new Object[] { message, filename, Integer.valueOf(linep[0]) });
       return new JavaScriptException(error, filename, linep[0]);
     }
 
