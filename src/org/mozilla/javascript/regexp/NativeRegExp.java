@@ -2007,6 +2007,7 @@ public class NativeRegExp extends IdScriptableObject implements Function
                         }
                     }
                     /* else false thru... */
+                    // fallthru
                     case REOP_ALT:
                     {
                         int nextpc = pc + getOffset(program, pc);

@@ -724,8 +724,8 @@ public class Parser
         pn.setLineno(ts.lineno);
         try {
             if (isExpressionClosure) {
-                ReturnStatement n = new ReturnStatement(ts.lineno);
-                n.setReturnValue(assignExpr());
+                AstNode returnValue = assignExpr();
+                ReturnStatement n = new ReturnStatement(returnValue.getPosition(), returnValue.getLength(), returnValue);
                 // expression closure flag is required on both nodes
                 n.putProp(Node.EXPRESSION_CLOSURE_PROP, Boolean.TRUE);
                 pn.putProp(Node.EXPRESSION_CLOSURE_PROP, Boolean.TRUE);
@@ -2545,6 +2545,7 @@ public class Parser
                   return memberExprTail(true, xmlInitializer());
               }
               // Fall thru to the default handling of RELOP
+              // fallthru
 
           default:
               AstNode pn = memberExpr(true);
@@ -3117,7 +3118,7 @@ public class Parser
             Comment jsdocNode = getAndResetJsDoc();
             int lineno = ts.lineno;
             int begin = ts.tokenBeg;
-            AstNode e = (peekToken() == Token.RP ? new EmptyExpression() : expr());
+            AstNode e = (peekToken() == Token.RP ? new EmptyExpression(begin) : expr());
             if (peekToken() == Token.FOR) {
                 return generatorExpression(e, begin);
             }
@@ -3316,6 +3317,7 @@ public class Parser
                     isForOf = true;
                     break;
                 }
+                // fallthru
             default:
                 reportError("msg.in.after.for.name");
             }
