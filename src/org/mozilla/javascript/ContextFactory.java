@@ -289,6 +289,9 @@ public class ContextFactory
           case Context.FEATURE_ENUMERATE_IDS_FIRST:
               return cx.getLanguageVersion() >= Context.VERSION_ES6;
 
+          case Context.FEATURE_THREAD_SAFE_OBJECTS:
+              return false;
+
           case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
             return false;
 

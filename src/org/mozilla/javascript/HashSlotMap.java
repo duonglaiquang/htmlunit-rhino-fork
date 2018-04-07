@@ -25,24 +25,24 @@ public class HashSlotMap
         new LinkedHashMap<Object, ScriptableObject.Slot>();
 
     @Override
-    public synchronized int size() {
+    public int size() {
         return map.size();
     }
 
     @Override
-    public synchronized boolean isEmpty() {
+    public boolean isEmpty() {
         return map.isEmpty();
     }
 
     @Override
-    public synchronized ScriptableObject.Slot query(Object key, int index)
+    public ScriptableObject.Slot query(Object key, int index)
     {
         Object name = key == null ? String.valueOf(index) : key;
         return map.get(name);
     }
 
     @Override
-    public synchronized ScriptableObject.Slot get(Object key, int index, ScriptableObject.SlotAccess accessType) {
+    public ScriptableObject.Slot get(Object key, int index, ScriptableObject.SlotAccess accessType) {
         Object name = key == null ? String.valueOf(index) : key;
         ScriptableObject.Slot slot = map.get(name);
         switch (accessType) {
@@ -54,12 +54,10 @@ public class HashSlotMap
                     return slot;
                 break;
             case MODIFY_GETTER_SETTER:
-                slot = ScriptableObject.unwrapSlot(slot);
                 if (slot instanceof ScriptableObject.GetterSlot)
                     return slot;
                 break;
             case CONVERT_ACCESSOR_TO_DATA:
-                slot = ScriptableObject.unwrapSlot(slot);
                 if ( !(slot instanceof ScriptableObject.GetterSlot) )
                     return slot;
                 break;
@@ -72,22 +70,20 @@ public class HashSlotMap
         Object name, ScriptableObject.SlotAccess accessType) {
         ScriptableObject.Slot slot = map.get(name);
         if (slot != null) {
-            ScriptableObject.Slot inner = ScriptableObject.unwrapSlot(slot);
             ScriptableObject.Slot newSlot;
 
             if (accessType == MODIFY_GETTER_SETTER
-                    && !(inner instanceof ScriptableObject.GetterSlot)) {
-                newSlot = new ScriptableObject.GetterSlot(name, slot.indexOrHash, inner.getAttributes());
+                    && !(slot instanceof ScriptableObject.GetterSlot)) {
+                newSlot = new ScriptableObject.GetterSlot(name, slot.indexOrHash, slot.getAttributes());
             } else if (accessType == CONVERT_ACCESSOR_TO_DATA
-                    && (inner instanceof ScriptableObject.GetterSlot)) {
-                newSlot = new ScriptableObject.Slot(name, slot.indexOrHash, inner.getAttributes());
+                    && (slot instanceof ScriptableObject.GetterSlot)) {
+                newSlot = new ScriptableObject.Slot(name, slot.indexOrHash, slot.getAttributes());
             } else if (accessType == MODIFY_CONST) {
                 return null;
             } else {
-                return inner;
+                return slot;
             }
-            newSlot.value = inner.value;
-            slot.markDeleted();
+            newSlot.value = slot.value;
             map.put(name, newSlot);
             return newSlot;
         }
@@ -103,13 +99,13 @@ public class HashSlotMap
     }
 
     @Override
-    public synchronized void addSlot(ScriptableObject.Slot newSlot) {
+    public void addSlot(ScriptableObject.Slot newSlot) {
         Object name = newSlot.name == null ? String.valueOf(newSlot.indexOrHash) : newSlot.name;
         map.put(name, newSlot);
     }
 
     @Override
-    public synchronized void remove(Object key, int index) {
+    public void remove(Object key, int index) {
         Object name = key == null ? String.valueOf(index) : key;
         ScriptableObject.Slot slot = map.get(name);
         if (slot != null) {
@@ -121,7 +117,6 @@ public class HashSlotMap
                 }
                 return;
             }
-            slot.markDeleted();
             map.remove(name);
         }
     }
