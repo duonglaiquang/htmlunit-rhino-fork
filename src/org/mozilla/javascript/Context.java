@@ -328,6 +328,14 @@ public class Context
     public static final int FEATURE_THREAD_SAFE_OBJECTS = 17;
 
     /**
+     * If set, then all integer numbers will be returned without decimal place. For instance
+     * assume there is a function like this:
+     * <code>function foo() {return 5;}</code>
+     * 5 will be returned if feature is set, 5.0 otherwise.
+     */
+    public static final int FEATURE_INTEGER_WITHOUT_DECIMAL_PLACE = 18;
+
+    /**
      * Special to HtmlUnit's Rhino fork.
      *
      * Whether the "someFunc.arguments" is a read-only view of the function argument
@@ -399,6 +407,7 @@ public class Context
      * By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 108;
+
 
     public static final String languageVersionProperty = "language version";
     public static final String errorReporterProperty   = "error reporter";
@@ -1570,7 +1579,7 @@ public class Context
                              securityDomain);
     }
 
-    protected Script compileString(String source,
+    final Script compileString(String source,
                                Evaluator compiler,
                                ErrorReporter compilationErrorReporter,
                                String sourceName, int lineno,
@@ -1611,7 +1620,7 @@ public class Context
                                securityDomain);
     }
 
-    protected Function compileFunction(Scriptable scope, String source,
+    final Function compileFunction(Scriptable scope, String source,
                                    Evaluator compiler,
                                    ErrorReporter compilationErrorReporter,
                                    String sourceName, int lineno,
