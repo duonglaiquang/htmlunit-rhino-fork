@@ -1579,7 +1579,7 @@ public class Context
                              securityDomain);
     }
 
-    final Script compileString(String source,
+    protected Script compileString(String source,
                                Evaluator compiler,
                                ErrorReporter compilationErrorReporter,
                                String sourceName, int lineno,
@@ -1620,7 +1620,7 @@ public class Context
                                securityDomain);
     }
 
-    final Function compileFunction(Scriptable scope, String source,
+    protected Function compileFunction(Scriptable scope, String source,
                                    Evaluator compiler,
                                    ErrorReporter compilationErrorReporter,
                                    String sourceName, int lineno,
