@@ -375,20 +375,11 @@ public class Context
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that {@code Object.getPrototypeOf('')} is allowed
-     *
-     * By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING = 105;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
      * Indicates that {@code MemberBox.toString()} contains property name.
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 106;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -397,7 +388,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns true.
      */
-    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 107;
+    public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 106;
 
     /**
      * Special to HtmlUnit's Rhino fork.
@@ -406,7 +397,7 @@ public class Context
      *
      * By default {@link #hasFeature(int)} returns false.
      */
-    public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 108;
+    public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 107;
 
 
     public static final String languageVersionProperty = "language version";

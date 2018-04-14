@@ -306,9 +306,6 @@ public class ContextFactory
           case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
             return false;
 
-          case Context.FEATURE_HTMLUNIT_GET_PROTOTYPE_OF_STRING:
-            return true;
-
           case Context.FEATURE_HTMLUNIT_ARRAY_PROPERTIES:
               return false;
         }
