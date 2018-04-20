@@ -284,7 +284,11 @@ public abstract class ScriptableObject implements Scriptable,
                         // we should throw a TypeError in this case.
                         cx.hasFeature(Context.FEATURE_STRICT_MODE)) {
 
-                        throw ScriptRuntime.typeError3("msg.set.prop.no.setter", name.toString(), start.getClassName(), Context.toString(value));
+                        String prop = "";
+                        if (name != null) {
+                            prop = "[" + start.getClassName() + "]." + name.toString();
+                        }
+                        throw ScriptRuntime.typeError2("msg.set.prop.no.setter", prop, Context.toString(value));
                     }
                     Scriptable scriptable = start;
 
