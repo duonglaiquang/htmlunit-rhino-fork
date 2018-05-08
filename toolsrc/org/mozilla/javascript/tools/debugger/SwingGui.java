@@ -452,27 +452,30 @@ public class SwingGui extends JFrame implements GuiCallback {
     protected void showFileWindow(String sourceUrl, int lineNumber) {
         FileWindow w;
         if (sourceUrl != null) {
-        	w = getFileWindow(sourceUrl);
+            w = getFileWindow(sourceUrl);
         }
         else {
             JInternalFrame f = getSelectedFrame();
             if (f != null && f instanceof FileWindow) {
-            	w = (FileWindow) f;
+                w = (FileWindow) f;
             }
             else {
-            	w = currentWindow;
+                w = currentWindow;
             }
         }
-        if (w == null) {
+        if (w == null && sourceUrl != null) {
             Dim.SourceInfo si = dim.sourceInfo(sourceUrl);
             createFileWindow(si, -1);
             w = getFileWindow(sourceUrl);
+        }
+        if (w == null) {
+            return;
         }
         if (lineNumber > -1) {
             int start = w.getPosition(lineNumber-1);
             int end = w.getPosition(lineNumber)-1;
             if (start <= 0) {
-            	return;
+                return;
             }
             w.textArea.select(start);
             w.textArea.setCaretPosition(start);
@@ -877,7 +880,7 @@ public class SwingGui extends JFrame implements GuiCallback {
                                                 "Function");
             dlg.showDialog(this);
         } else if (cmd.equals("Go to line...")) {
-        	final String s = (String) JOptionPane.showInputDialog(
+            final String s = (String) JOptionPane.showInputDialog(
                     this,
                     "Line number",
                     "Go to line...",
@@ -885,17 +888,16 @@ public class SwingGui extends JFrame implements GuiCallback {
                     null,
                     null,
                     null);
-        	if (s == null) {
-        		return;
-        	}
-        	try {
-        		final int line = Integer.parseInt(s);
+            if (s == null || s.trim().length() == 0) {
+                return;
+            }
+            try {
+                final int line = Integer.parseInt(s);
                 showFileWindow(null, line);
-        	}
-        	catch (final NumberFormatException nfe) {
-        		// ignore
-        	}
-        	
+            }
+            catch (final NumberFormatException nfe) {
+                // ignore
+            }
         } else if (cmd.equals("Tile")) {
             JInternalFrame[] frames = desk.getAllFrames();
             int count = frames.length;

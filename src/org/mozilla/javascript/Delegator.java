@@ -72,6 +72,7 @@ public class Delegator implements Function {
     public Scriptable getDelegee() {
         return obj;
     }
+
     /**
      * Set the delegee.
      *
@@ -81,90 +82,105 @@ public class Delegator implements Function {
     public void setDelegee(Scriptable obj) {
         this.obj = obj;
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#getClassName
      */
     public String getClassName() {
         return getDelegee().getClassName();
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#get(String, Scriptable)
      */
     public Object get(String name, Scriptable start) {
         return getDelegee().get(name,start);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#get(int, Scriptable)
      */
     public Object get(int index, Scriptable start) {
         return getDelegee().get(index,start);
-        }
+    }
+
     /**
      * @see org.mozilla.javascript.Scriptable#has(String, Scriptable)
      */
     public boolean has(String name, Scriptable start) {
         return getDelegee().has(name,start);
-        }
+    }
+
     /**
      * @see org.mozilla.javascript.Scriptable#has(int, Scriptable)
      */
     public boolean has(int index, Scriptable start) {
         return getDelegee().has(index,start);
-        }
+    }
+
     /**
      * @see org.mozilla.javascript.Scriptable#put(String, Scriptable, Object)
      */
     public void put(String name, Scriptable start, Object value) {
         getDelegee().put(name,start,value);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#put(int, Scriptable, Object)
      */
     public void put(int index, Scriptable start, Object value) {
         getDelegee().put(index,start,value);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#delete(String)
      */
     public void delete(String name) {
         getDelegee().delete(name);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#delete(int)
      */
     public void delete(int index) {
         getDelegee().delete(index);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#getPrototype
      */
     public Scriptable getPrototype() {
         return getDelegee().getPrototype();
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#setPrototype
      */
     public void setPrototype(Scriptable prototype) {
         getDelegee().setPrototype(prototype);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#getParentScope
      */
     public Scriptable getParentScope() {
         return getDelegee().getParentScope();
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#setParentScope
      */
     public void setParentScope(Scriptable parent) {
         getDelegee().setParentScope(parent);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#getIds
      */
     public Object[] getIds() {
         return getDelegee().getIds();
     }
+
     /**
      * Note that this method does not get forwarded to the delegee if
      * the <code>hint</code> parameter is null,
@@ -183,12 +199,14 @@ public class Delegator implements Function {
                 hint == ScriptRuntime.FunctionClass) ?
             this : getDelegee().getDefaultValue(hint);
     }
+
     /**
      * @see org.mozilla.javascript.Scriptable#hasInstance
      */
     public boolean hasInstance(Scriptable instance) {
         return getDelegee().hasInstance(instance);
     }
+
     /**
      * @see org.mozilla.javascript.Function#call
      */
@@ -215,9 +233,9 @@ public class Delegator implements Function {
      */
     public Scriptable construct(Context cx, Scriptable scope, Object[] args)
     {
-        if (getDelegee() == null) {
-            //this little trick allows us to declare prototype objects for
-            //Delegators
+        Scriptable myDelegee = getDelegee();
+        if (myDelegee == null) {
+            //this little trick allows us to declare prototype objects for Delegators
             Delegator n = newInstance();
             Scriptable delegee;
             if (args.length == 0) {
@@ -229,7 +247,7 @@ public class Delegator implements Function {
             return n;
         }
         else {
-            return ((Function)getDelegee()).construct(cx,scope,args);
+            return ((Function)myDelegee).construct(cx, scope, args);
         }
     }
 }
