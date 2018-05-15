@@ -294,6 +294,9 @@ public class ContextFactory
           case Context.FEATURE_INTEGER_WITHOUT_DECIMAL_PLACE:
               return false;
 
+          case Context.FEATURE_LITTLE_ENDIAN:
+              return false;
+
           case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
             return false;
 
