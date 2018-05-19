@@ -3077,14 +3077,14 @@ public abstract class ScriptableObject implements Scriptable,
      * Special to HtmlUnit's Rhino fork.
      *
      * Decides what to do when setting a ReadOnly property.
-     * The SimpleScriptable can return <tt>true<tt> for allowing to value to be set, <tt>false<tt> for not allowing (ignoring),
+     * The SimpleScriptable can return <tt>true</tt> for allowing to value to be set, <tt>false</tt> for not allowing (ignoring),
      * or can simply throw {@link ScriptRuntime#typeError3(String, String, String, String)} with
      * "msg.set.prop.no.setter", name, this.getClassName() and Context.toString(value).
      *
      * By default, this method returns <tt>true</tt>
      * @param name the property name
      * @param value the value
-     * @return <tt>true<tt> for allowing setting the value, <tt>false</tt> for ignoring the setting, or we can throw an exception
+     * @return <tt>true</tt> for allowing setting the value, <tt>false</tt> for ignoring the setting, or we can throw an exception
      */
     protected boolean isReadOnlySettable(final String name, final Object value) {
         return true;
