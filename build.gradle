@@ -126,9 +126,7 @@ jar {
 
 
 javadoc {
-    options.addBooleanOption("-allow-script-in-comments", true)
     options.addStringOption('Xdoclint:html', '-quiet')
-
 }
 
 task javadocJar(type: Jar) {
