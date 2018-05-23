@@ -23,18 +23,15 @@ public class Bug783797Test {
         void run(Context cx, ScriptableObject scope1, ScriptableObject scope2);
     }
 
-    private static ContextAction action(final String fn, final Action a) {
-        return new ContextAction() {
-            public Object run(Context cx) {
-                ScriptableObject scope1 = cx.initStandardObjects();
-                ScriptableObject scope2 = cx.initStandardObjects();
-                scope1.put("scope2", scope1, scope2);
-
-                eval(cx, scope2, fn);
-                a.run(cx, scope1, scope2);
-
-                return null;
-            }
+    private static ContextAction<Void> action(final String fn, final Action a) {
+        return cx -> {
+            ScriptableObject scope1 = cx.initStandardObjects();
+            ScriptableObject scope2 = cx.initStandardObjects();
+            scope1.put("scope2", scope1, scope2);
+        
+            eval(cx, scope2, fn);
+            a.run(cx, scope1, scope2);
+            return null;
         };
     }
 
