@@ -7,7 +7,7 @@
 package org.mozilla.javascript;
 
 import java.io.Serializable;
-
+import java.util.Arrays;
 import org.mozilla.javascript.debug.DebuggableScript;
 
 final class InterpreterData implements Serializable, DebuggableScript
@@ -89,6 +89,8 @@ final class InterpreterData implements Serializable, DebuggableScript
 
     boolean evalScriptFlag; // true if script corresponds to eval() code
 
+    private int icodeHashCode = 0;
+
     /** true if the function has been declared like "var foo = function() {...}" */
 	boolean declaredAsVar;
 
@@ -158,5 +160,14 @@ final class InterpreterData implements Serializable, DebuggableScript
     public DebuggableScript getParent()
     {
          return parentData;
+    }
+
+    public int icodeHashCode()
+    {
+        int h = icodeHashCode;
+        if (h == 0) {
+            icodeHashCode = h = Arrays.hashCode(itsICode);
+        }
+        return h;
     }
 }
