@@ -7,9 +7,12 @@
 package org.mozilla.javascript;
 
 import org.mozilla.javascript.ast.AstNode;
+import org.mozilla.javascript.ast.AstRoot;
+import org.mozilla.javascript.ast.Block;
 import org.mozilla.javascript.ast.FunctionCall;
 import org.mozilla.javascript.ast.FunctionNode;
 import org.mozilla.javascript.ast.Jump;
+import org.mozilla.javascript.ast.Scope;
 import org.mozilla.javascript.ast.ScriptNode;
 import org.mozilla.javascript.ast.UnaryExpression;
 import org.mozilla.javascript.ast.VariableInitializer;
@@ -197,11 +200,10 @@ class CodeGenerator extends Icode {
             gen.itsData = new InterpreterData(itsData);
             gen.generateFunctionICode();
             array[i] = gen.itsData;
-            if (fn.getParent() instanceof FunctionCall) {
-                AstNode grandParent = fn.getParent().getParent();
-                if (grandParent instanceof UnaryExpression && grandParent.getType() == Token.NOT) {
-                    gen.itsData.declaredAsFunctionExpression = true;
-                }
+            if (!(fn.getParent() instanceof AstRoot
+                    || fn.getParent() instanceof Scope
+                    || fn.getParent() instanceof Block)) {
+                gen.itsData.declaredAsFunctionExpression = true;
             }
         }
         itsData.itsNestedFunctions = array;
