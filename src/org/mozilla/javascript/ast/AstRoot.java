@@ -107,6 +107,9 @@ public class AstRoot extends ScriptNode {
         StringBuilder sb = new StringBuilder();
         for (Node node : this) {
             sb.append(((AstNode)node).toSource(depth));
+            if(node.getType() == Token.COMMENT) {
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }
@@ -128,6 +131,7 @@ public class AstRoot extends ScriptNode {
      */
     public void checkParentLinks() {
         this.visit(new NodeVisitor() {
+            @Override
             public boolean visit(AstNode node) {
                 int type = node.getType();
                 if (type == Token.SCRIPT)

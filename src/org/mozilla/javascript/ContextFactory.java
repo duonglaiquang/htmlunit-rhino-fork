@@ -190,9 +190,11 @@ public class ContextFactory
         }
         hasCustomGlobal = true;
         class GlobalSetterImpl implements GlobalSetter {
+            @Override
             public void setContextFactoryGlobal(ContextFactory factory) {
                 global = factory == null ? new ContextFactory() : factory;
             }
+            @Override
             public ContextFactory getContextFactoryGlobal() {
                 return global;
             }
@@ -353,9 +355,8 @@ public class ContextFactory
             return org.mozilla.javascript.xml.XMLLib.Factory.create(
                 "org.mozilla.javascript.xmlimpl.XMLLibImpl"
             );
-        } else {
-            return null;
         }
+        return null;
     }
 
 
@@ -370,6 +371,7 @@ public class ContextFactory
     protected GeneratedClassLoader createClassLoader(final ClassLoader parent)
     {
         return AccessController.doPrivileged(new PrivilegedAction<DefiningClassLoader>() {
+            @Override
             public DefiningClassLoader run(){
                 return new DefiningClassLoader(parent);
             }

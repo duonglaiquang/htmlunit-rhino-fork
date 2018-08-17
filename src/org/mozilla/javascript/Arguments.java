@@ -123,13 +123,11 @@ class Arguments extends IdScriptableObject
       final Object value = arg(index);
       if (value == NOT_FOUND) {
         return super.get(index, start);
-      } else {
-        if (sharedWithActivation(index)) {
-          return getFromActivation(index);
-        } else {
-          return value;
-        }
       }
+      if (sharedWithActivation(index)) {
+        return getFromActivation(index);
+      }
+      return value;
     }
 
     private boolean sharedWithActivation(int index)
@@ -364,11 +362,10 @@ class Arguments extends IdScriptableObject
         ScriptableObject desc = super.getOwnPropertyDescriptor(cx, id);
         desc.put("value", desc, value);
         return desc;
-      } else {
-        Scriptable scope = getParentScope();
-        if (scope == null) scope = this;
-        return buildDataDescriptor(scope, value, EMPTY);
       }
+      Scriptable scope = getParentScope();
+      if (scope == null) scope = this;
+      return buildDataDescriptor(scope, value, EMPTY);
     }
 
     @Override

@@ -1069,10 +1069,8 @@ public class Context
             return cx.getErrorReporter().
                             runtimeError(message, sourceName, lineno,
                                          lineSource, lineOffset);
-        } else {
-            throw new EvaluatorException(message, sourceName, lineno,
-                                         lineSource, lineOffset);
         }
+        throw new EvaluatorException(message, sourceName, lineno, lineSource, lineOffset);
     }
 
     static EvaluatorException reportRuntimeError0(String messageId)
@@ -1332,9 +1330,8 @@ public class Context
                                       securityDomain);
         if (script != null) {
             return script.exec(this, scope);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -1363,9 +1360,8 @@ public class Context
                                       securityDomain);
         if (script != null) {
             return script.exec(this, scope);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -1668,9 +1664,8 @@ public class Context
     {
         if (fun instanceof BaseFunction)
             return ((BaseFunction)fun).decompile(indent, 0);
-        else
-            return "function " + fun.getClassName() +
-                   "() {\n\t[native code]\n}\n";
+
+        return "function " + fun.getClassName() + "() {\n\t[native code]\n}\n";
     }
 
     /**
@@ -2218,9 +2213,13 @@ public class Context
             return null;
         hasClassShutter = true;
         return new ClassShutterSetter() {
+
+            @Override
             public void setClassShutter(ClassShutter shutter) {
                 classShutter = shutter;
             }
+
+            @Override
             public ClassShutter getClassShutter() {
                 return classShutter;
             }
