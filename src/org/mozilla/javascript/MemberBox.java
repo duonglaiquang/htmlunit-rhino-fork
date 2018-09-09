@@ -144,7 +144,7 @@ final class MemberBox implements Serializable
        
         // handle delegators
         if (target instanceof Delegator) {
-        	target = ((Delegator) target).getDelegee();
+            target = ((Delegator) target).getDelegee();
         }
         for (int i=0; i<args.length; ++i) {
             if (args[i] instanceof Delegator) {
