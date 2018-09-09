@@ -271,7 +271,7 @@ public class FunctionNode extends ScriptNode {
      * if there is a lexical closure, or in a number of other situations.
      */
     public boolean requiresActivation() {
-    	return true;
+        return true;
     }
 
     public void setRequiresActivation() {

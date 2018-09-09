@@ -16,7 +16,7 @@ final class InterpretedFunction extends NativeFunction implements Script
     SecurityController securityController;
     Object securityDomain;
 
-	private Arguments arguments;
+    private Arguments arguments;
 
     private InterpretedFunction(InterpreterData idata,
                                 Object staticSecurityDomain)
@@ -186,50 +186,50 @@ final class InterpretedFunction extends NativeFunction implements Script
      */
     @Override
     public String toString() {
-    	return decompile(2, 0);
+        return decompile(2, 0);
     }
 
-	void setArguments(final Arguments arguments) {
-		if (arguments == null) {
-			this.arguments = null;
-			return;
-		}
-
-		final Context currentContext = Context.getCurrentContext();
-		if (currentContext.hasFeature(Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW)) {
-			this.arguments = new Arguments(arguments) {
-				@Override
-				public void put(int index, Scriptable start, Object value) {
-					// ignore
-				}
-				
-				@Override
-				public void put(String name, Scriptable start, Object value) {
-					// ignore
-				}
-
-				@Override
-				public void delete(int index) {
-					// ignore
-				}
-				
-				@Override
-				public void delete(String name) {
-					// ignore
-				}
-			};
+    void setArguments(final Arguments arguments) {
+        if (arguments == null) {
+            this.arguments = null;
+            return;
         }
-		else {
-			this.arguments = arguments;
-		}
-	}
-	
-	@Override
-	public Object get(final String name, final Scriptable start) {
-		if (start == this && "arguments".equals(name)) {
-			return this.arguments;
-		}
-		return super.get(name, start);
-	}
+
+        final Context currentContext = Context.getCurrentContext();
+        if (currentContext.hasFeature(Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW)) {
+            this.arguments = new Arguments(arguments) {
+                @Override
+                public void put(int index, Scriptable start, Object value) {
+                    // ignore
+                }
+                
+                @Override
+                public void put(String name, Scriptable start, Object value) {
+                    // ignore
+                }
+
+                @Override
+                public void delete(int index) {
+                    // ignore
+                }
+                
+                @Override
+                public void delete(String name) {
+                    // ignore
+                }
+            };
+        }
+        else {
+            this.arguments = arguments;
+        }
+    }
+
+    @Override
+    public Object get(final String name, final Scriptable start) {
+        if (start == this && "arguments".equals(name)) {
+            return this.arguments;
+        }
+        return super.get(name, start);
+    }
 }
 

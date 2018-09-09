@@ -92,9 +92,9 @@ final class InterpreterData implements Serializable, DebuggableScript
     private int icodeHashCode = 0;
 
     /** true if the function has been declared like "var foo = function() {...}" */
-	boolean declaredAsVar;
+    boolean declaredAsVar;
 
-	/** true if the function has been declared like "!function() {}". */
+    /** true if the function has been declared like "!function() {}". */
     boolean declaredAsFunctionExpression;
 
     @Override

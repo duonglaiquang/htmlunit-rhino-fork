@@ -31,24 +31,24 @@ final class MemberBox implements Serializable
     Function asFunction(final String name, final Scriptable scope, final Scriptable prototype) {
         if (asFunction == null) {
             asFunction = new BaseFunction(scope, prototype) {
-                  @Override
-                  public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] originalArgs) {
-                      MemberBox nativeGetter = MemberBox.this;
-                      Object getterThis;
-                      Object[] args;
-                      if (nativeGetter.delegateTo == null) {
-                          getterThis = thisObj;
-                          args = ScriptRuntime.emptyArgs;
-                      } else {
-                          getterThis = nativeGetter.delegateTo;
-                          args = new Object[] { thisObj };
-                      }
-                      return nativeGetter.invoke(getterThis, args);
-                  }
-                  
-                  @Override
+                @Override
+                public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] originalArgs) {
+                    MemberBox nativeGetter = MemberBox.this;
+                    Object getterThis;
+                    Object[] args;
+                    if (nativeGetter.delegateTo == null) {
+                        getterThis = thisObj;
+                        args = ScriptRuntime.emptyArgs;
+                    } else {
+                        getterThis = nativeGetter.delegateTo;
+                        args = new Object[] { thisObj };
+                    }
+                    return nativeGetter.invoke(getterThis, args);
+                }
+
+                @Override
                 public String getFunctionName() {
-                	return name;
+                    return name;
                 }
             };
         }
@@ -179,9 +179,9 @@ final class MemberBox implements Serializable
                 throw (ContinuationPending) e;
 
             if (e instanceof RhinoException)
-                throw Context.throwAsScriptRuntimeEx(e);            
+                throw Context.throwAsScriptRuntimeEx(e);
             else
-            	throw new RuntimeException("Exception invoking " + method.getName(), e);
+                throw new RuntimeException("Exception invoking " + method.getName(), e);
         } catch (IllegalArgumentException iae) {
             StringBuilder builder = new StringBuilder();
             for (Object arg : args) {
