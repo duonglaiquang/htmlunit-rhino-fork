@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.mozilla.javascript.debug.DebuggableObject;
 import org.mozilla.javascript.annotations.JSConstructor;
 import org.mozilla.javascript.annotations.JSFunction;
 import org.mozilla.javascript.annotations.JSGetter;
 import org.mozilla.javascript.annotations.JSSetter;
 import org.mozilla.javascript.annotations.JSStaticFunction;
+import org.mozilla.javascript.debug.DebuggableObject;
 
 /**
  * This is the default implementation of the Scriptable interface. This
@@ -309,7 +309,7 @@ public abstract class ScriptableObject implements Scriptable,
                 Context cx = Context.getContext();
                 if (setter instanceof MemberBox) {
                     MemberBox nativeSetter = (MemberBox)setter;
-                    Class<?> pTypes[] = nativeSetter.argTypes();
+                    Class<?> pTypes[] = nativeSetter.getParameterTypes();
                     // XXX: cache tag since it is already calculated in
                     // defineProperty ?
                     Class<?> valueType = pTypes[pTypes.length - 1];
@@ -1495,7 +1495,7 @@ public abstract class ScriptableObject implements Scriptable,
                     prefix = staticFunctionPrefix;
                 } else if (name.startsWith(getterPrefix)) {
                     prefix = getterPrefix;
-                } else if (annotation == null) {
+                } else {
                     // note that setterPrefix is among the unhandled names here -
                     // we deal with that when we see the getter
                     continue;

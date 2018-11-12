@@ -7,21 +7,43 @@
 
 package org.mozilla.javascript.optimizer;
 
-import org.mozilla.javascript.*;
-import org.mozilla.javascript.ast.FunctionNode;
-import org.mozilla.javascript.ast.Jump;
-import org.mozilla.javascript.ast.Name;
-import org.mozilla.javascript.ast.ScriptNode;
-import org.mozilla.classfile.*;
-
-import java.util.*;
-import java.lang.reflect.Constructor;
-
 import static org.mozilla.classfile.ClassFileWriter.ACC_FINAL;
 import static org.mozilla.classfile.ClassFileWriter.ACC_PRIVATE;
 import static org.mozilla.classfile.ClassFileWriter.ACC_PUBLIC;
 import static org.mozilla.classfile.ClassFileWriter.ACC_STATIC;
 import static org.mozilla.classfile.ClassFileWriter.ACC_VOLATILE;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
+import org.mozilla.classfile.ByteCode;
+import org.mozilla.classfile.ClassFileWriter;
+import org.mozilla.javascript.CompilerEnvirons;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Evaluator;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.GeneratedClassLoader;
+import org.mozilla.javascript.Kit;
+import org.mozilla.javascript.NativeFunction;
+import org.mozilla.javascript.NativeGenerator;
+import org.mozilla.javascript.Node;
+import org.mozilla.javascript.ObjArray;
+import org.mozilla.javascript.ObjToIntMap;
+import org.mozilla.javascript.RhinoException;
+import org.mozilla.javascript.Script;
+import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.SecurityController;
+import org.mozilla.javascript.Token;
+import org.mozilla.javascript.ast.FunctionNode;
+import org.mozilla.javascript.ast.Jump;
+import org.mozilla.javascript.ast.Name;
+import org.mozilla.javascript.ast.ScriptNode;
 
 /**
  * This class generates code for a given IR tree.
@@ -167,26 +189,9 @@ public class Codegen implements Evaluator
         initScriptNodesData(scriptOrFn);
 
         this.mainClassName = mainClassName;
-        this.mainClassSignature
-            = ClassFileWriter.classNameToSignature(mainClassName);
+        this.mainClassSignature = ClassFileWriter.classNameToSignature(mainClassName);
 
-        try {
-            return generateCode(encodedSource);
-        } catch (ClassFileWriter.ClassFileFormatException e) {
-            throw reportClassFileFormatException(scriptOrFn, e.getMessage());
-        }
-    }
-
-    private RuntimeException reportClassFileFormatException(
-        ScriptNode scriptOrFn,
-        String message)
-    {
-        String msg = scriptOrFn instanceof FunctionNode
-        ? ScriptRuntime.getMessage2("msg.while.compiling.fn",
-            ((FunctionNode)scriptOrFn).getFunctionName(), message)
-        : ScriptRuntime.getMessage1("msg.while.compiling.script", message);
-        return Context.reportRuntimeError(msg, scriptOrFn.getSourceName(),
-            scriptOrFn.getLineno(), null, 0);
+        return generateCode(encodedSource);
     }
 
     private void transform(ScriptNode tree)
@@ -311,11 +316,7 @@ public class Codegen implements Evaluator
             bodygen.scriptOrFn = n;
             bodygen.scriptOrFnIndex = i;
 
-            try {
-                bodygen.generateBodyCode();
-            } catch (ClassFileWriter.ClassFileFormatException e) {
-                throw reportClassFileFormatException(n, e.getMessage());
-            }
+            bodygen.generateBodyCode();
 
             if (n.getType() == Token.FUNCTION) {
                 OptFunctionNode ofn = OptFunctionNode.get(n);
@@ -4163,14 +4164,12 @@ Else pass the JS object in the aReg and 0.0 in the dReg.
         {
             ExceptionInfo(Jump node, Node finallyBlock)
             {
-                this.node = node;
                 this.finallyBlock = finallyBlock;
                 handlerLabels = new int[EXCEPTION_MAX];
                 exceptionStarts = new int[EXCEPTION_MAX];
                 currentFinally = null;
             }
 
-            Jump node;
             Node finallyBlock;
             int[] handlerLabels;
             int[] exceptionStarts;
@@ -4239,9 +4238,11 @@ Else pass the JS object in the aReg and 0.0 in the dReg.
     private Node getFinallyAtTarget(Node node) {
         if (node == null) {
             return null;
-        } else if (node.getType() == Token.FINALLY) {
+        }
+        if (node.getType() == Token.FINALLY) {
             return node;
-        } else if (node != null && node.getType() == Token.TARGET) {
+        }
+        if (node.getType() == Token.TARGET) {
             Node fBlock = node.getNext();
             if (fBlock != null && fBlock.getType() == Token.FINALLY) {
                 return fBlock;

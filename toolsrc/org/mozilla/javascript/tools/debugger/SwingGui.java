@@ -5,19 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package org.mozilla.javascript.tools.debugger;
 
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import java.awt.EventQueue;
-import java.awt.ActiveEvent;
 import java.awt.AWTEvent;
+import java.awt.ActiveEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -30,31 +26,96 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.*;
-
-import java.util.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.io.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.event.TreeModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Segment;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
-import java.lang.reflect.Method;
 
 import org.mozilla.javascript.Kit;
 import org.mozilla.javascript.SecurityUtilities;
-
-import org.mozilla.javascript.tools.shell.ConsoleTextArea;
-
 import org.mozilla.javascript.tools.debugger.treetable.JTreeTable;
 import org.mozilla.javascript.tools.debugger.treetable.TreeTableModel;
 import org.mozilla.javascript.tools.debugger.treetable.TreeTableModelAdapter;
+import org.mozilla.javascript.tools.shell.ConsoleTextArea;
 
 /**
  * GUI for the Rhino debugger.
@@ -611,7 +672,7 @@ public class SwingGui extends JFrame implements GuiCallback {
 
         Dim.ContextData contextData = lastFrame.contextData();
 
-        JComboBox ctx = context.context;
+        JComboBox<String> ctx = context.context;
         List<String> toolTips = context.toolTips;
         context.disableUpdate();
         int frameCount = contextData.frameCount();
@@ -739,11 +800,8 @@ public class SwingGui extends JFrame implements GuiCallback {
     private String readFile(String fileName) {
         String text;
         try {
-            Reader r = new FileReader(fileName);
-            try {
+            try (Reader r = new FileReader(fileName)) {
                 text = Kit.readReader(r);
-            } finally {
-                r.close();
             }
         } catch (IOException ex) {
             MessageDialogWrapper.showMessageDialog(this,
@@ -1652,7 +1710,7 @@ class MoreWindows extends JDialog implements ActionListener {
     /**
      * The list component.
      */
-    private JList list;
+    private JList<String> list;
 
     /**
      * Our parent frame.
@@ -1684,8 +1742,8 @@ class MoreWindows extends JDialog implements ActionListener {
         getRootPane().setDefaultButton(setButton);
 
         //dim part of the dialog
-        list = new JList(new DefaultListModel());
-        DefaultListModel model = (DefaultListModel)list.getModel();
+        list = new JList<>(new DefaultListModel<String>());
+        DefaultListModel<String> model = (DefaultListModel<String>)list.getModel();
         model.clear();
         //model.fireIntervalRemoved(model, 0, size);
         for (String data: fileWindows.keySet()) {
@@ -1765,7 +1823,7 @@ class MoreWindows extends JDialog implements ActionListener {
             setVisible(false);
             value = null;
         } else if (cmd.equals("Select")) {
-            value = (String)list.getSelectedValue();
+            value = list.getSelectedValue();
             setVisible(false);
             swingGui.showFileWindow(value, -1);
         }
@@ -1802,7 +1860,7 @@ class FindFunction extends JDialog implements ActionListener {
     /**
      * List of functions.
      */
-    private JList list;
+    private JList<String> list;
 
     /**
      * The debug GUI frame.
@@ -1832,8 +1890,8 @@ class FindFunction extends JDialog implements ActionListener {
         setButton.addActionListener(this);
         getRootPane().setDefaultButton(setButton);
 
-        list = new JList(new DefaultListModel());
-        DefaultListModel model = (DefaultListModel)list.getModel();
+        list = new JList<>(new DefaultListModel<String>());
+        DefaultListModel<String> model = (DefaultListModel<String>)list.getModel();
         model.clear();
 
         String[] a = debugGui.dim.functionNames();
@@ -1917,7 +1975,7 @@ class FindFunction extends JDialog implements ActionListener {
                 return;
             }
             try {
-                value = (String)list.getSelectedValue();
+                value = list.getSelectedValue();
             } catch (ArrayIndexOutOfBoundsException exc) {
                 return;
             }
@@ -2912,7 +2970,7 @@ class ContextWindow extends JPanel implements ActionListener {
     /**
      * The combo box that holds the stack frames.
      */
-    JComboBox context;
+    JComboBox<String> context;
 
     /**
      * Tool tips for the stack frames.
@@ -2981,7 +3039,7 @@ class ContextWindow extends JPanel implements ActionListener {
         p2.setLayout(new GridLayout());
         p1.add(t1);
         JLabel label = new JLabel("Context:");
-        context = new JComboBox();
+        context = new JComboBox<>();
         context.setLightWeightPopupEnabled(false);
         toolTips = Collections.synchronizedList(new java.util.ArrayList<String>());
         label.setBorder(context.getBorder());

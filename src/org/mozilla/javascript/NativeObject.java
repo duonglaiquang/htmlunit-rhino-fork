@@ -6,7 +6,14 @@
 
 package org.mozilla.javascript;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * This class implements the Object native object.
@@ -501,7 +508,7 @@ public class NativeObject extends IdScriptableObject implements Map
         }
     }
 
-    private Scriptable getCompatibleObject(Context cx, Scriptable scope, Object arg)
+    private static Scriptable getCompatibleObject(Context cx, Scriptable scope, Object arg)
     {
         if (cx.getLanguageVersion() >= Context.VERSION_ES6) {
             Scriptable s = ScriptRuntime.toObject(cx, scope, arg);
