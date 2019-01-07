@@ -23,7 +23,7 @@ Rhino is licensed under the [MPL 2.0](./LICENSE.txt).
 [Release Notes](./RELEASE-NOTES.md) for recent releases.
 
 [Compatibility table](http://mozilla.github.io/rhino/compat/engines.html) which shows which advanced JavaScript
-features from ES5, 6, and 7 are implemented in Rhino.
+features from ES6, and ES2016+ are implemented in Rhino.
 
 ## Documentation
 
@@ -49,6 +49,8 @@ Rhino builds with `Gradle`. Here are some useful tasks:
 ```
 Build and create `Rhino` jar in the `buildGradle/libs` directory.
 ```
+git submodule init
+git submodule update
 ./gradlew test
 ```
 Build and run all the tests.
