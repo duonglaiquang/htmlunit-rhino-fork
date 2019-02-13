@@ -365,12 +365,22 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_isExtensible:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                        && !(arg instanceof ScriptableObject)) {
+                  return Boolean.FALSE;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
                 return Boolean.valueOf(obj.isExtensible());
               }
           case ConstructorId_preventExtensions:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                        && !(arg instanceof ScriptableObject)) {
+                  return arg;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
                 obj.preventExtensions();
                 return obj;
@@ -403,6 +413,11 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_isSealed:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                        && !(arg instanceof ScriptableObject)) {
+                  return Boolean.TRUE;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
 
                 if (obj.isExtensible()) return Boolean.FALSE;
@@ -418,6 +433,11 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_isFrozen:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                        && !(arg instanceof ScriptableObject)) {
+                  return Boolean.TRUE;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
 
                 if (obj.isExtensible()) return Boolean.FALSE;
@@ -435,6 +455,11 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_seal:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                        && !(arg instanceof ScriptableObject)) {
+                  return arg;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
 
                 for (Object name: obj.getAllIds()) {
@@ -451,6 +476,11 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_freeze:
               {
                 Object arg = args.length < 1 ? Undefined.instance : args[0];
+                if (cx.getLanguageVersion() >= Context.VERSION_ES6
+                      && !(arg instanceof ScriptableObject)) {
+                  return arg;
+                }
+
                 ScriptableObject obj = ensureScriptableObject(arg);
 
                 for (Object name: obj.getAllIds()) {
