@@ -179,6 +179,10 @@ public class NativeArray extends IdScriptableObject implements List
         }
         addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_isArray,
                 "isArray", 1);
+        addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_of,
+                "of", 0);
+        addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_from,
+                "from", 1);
         super.fillConstructorProperties(ctor);
     }
 
@@ -223,6 +227,7 @@ public class NativeArray extends IdScriptableObject implements List
           case Id_values:         arity=0; s="values";         break;
           case Id_entries:        arity=0; s="entries";        break;
           case Id_includes:       arity=1; s="includes";       break;
+          case Id_copyWithin:     arity=2; s="copyWithin";     break;
           default: throw new IllegalArgumentException(String.valueOf(id));
         }
 
@@ -279,6 +284,14 @@ public class NativeArray extends IdScriptableObject implements List
 
               case ConstructorId_isArray:
                 return args.length > 0 && js_isArray(args[0]);
+
+              case ConstructorId_of: {
+                  return js_of(cx, scope, thisObj, args);
+                }
+
+              case ConstructorId_from: {
+                  return js_from(cx, scope, thisObj, args);
+                }
 
               case Id_constructor: {
                 boolean inNewExpr = (thisObj == null);
@@ -340,6 +353,9 @@ public class NativeArray extends IdScriptableObject implements List
 
               case Id_fill:
                 return js_fill(cx, scope, thisObj, args);
+
+              case Id_copyWithin:
+                  return js_copyWithin(cx, scope, thisObj, args);
 
               case Id_every:
               case Id_filter:
@@ -637,6 +653,100 @@ public class NativeArray extends IdScriptableObject implements List
             throw ScriptRuntime.constructError("RangeError", msg);
         }
         return new NativeArray(len);
+    }
+
+    private static Scriptable callConstructorOrCreateArray(Context cx, Scriptable scope,
+        Scriptable arg, long length, boolean lengthAlways) {
+        Scriptable result = null;
+
+        if (arg instanceof Function) {
+            try {
+                final Object[] args = (lengthAlways || (length > 0)) ?
+                    new Object[]{length} : ScriptRuntime.emptyArgs;
+                result = ((Function) arg).construct(cx, scope, args);
+            } catch (EcmaError ee) {
+                if (!"TypeError".equals(ee.getName())) {
+                    throw ee;
+                }
+                // If we get here then it is likely that the function we called is not really
+                // a constructor. Unfortunately there's no better way to tell in Rhino right now.
+            }
+        }
+
+        if (result == null) {
+            // "length" below is really a hint so don't worry if it's really large
+            result = cx.newArray(scope, (length > Integer.MAX_VALUE) ? 0 : (int)length);
+        }
+
+        return result;
+    }
+
+    private static Object js_from(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+        final Scriptable items =
+            ScriptRuntime.toObject(scope, (args.length >= 1) ? args[0] : Undefined.instance);
+        Object mapArg = (args.length >= 2) ? args[1] : Undefined.instance;
+        Scriptable thisArg = Undefined.SCRIPTABLE_UNDEFINED;
+        final boolean mapping = !Undefined.isUndefined(mapArg);
+        Function mapFn = null;
+
+        if (mapping) {
+            if (!(mapArg instanceof Function)) {
+                throw ScriptRuntime.typeError0("msg.map.function.not");
+            }
+            mapFn = (Function)mapArg;
+            if (args.length >= 3) {
+                thisArg = ensureScriptable(args[2]);
+            }
+        }
+
+        Object iteratorProp = ScriptableObject.getProperty(items, SymbolKey.ITERATOR);
+        if (!(items instanceof NativeArray) && (iteratorProp != Scriptable.NOT_FOUND) &&
+            !Undefined.isUndefined(iteratorProp)) {
+          final Object iterator = ScriptRuntime.callIterator(items, cx, scope);
+          if (!Undefined.isUndefined(iterator)) {
+            final Scriptable result = callConstructorOrCreateArray(cx, scope, thisObj, 0, false);
+            long k = 0;
+            try (IteratorLikeIterable it = new IteratorLikeIterable(cx, scope, iterator)) {
+              for (Object temp : it) {
+                if (mapping) {
+                  temp = mapFn.call(cx, scope, thisArg, new Object[]{temp, k});
+                }
+                defineElem(cx, result, k, temp);
+                k++;
+              }
+            }
+            setLengthProperty(cx, result, k);
+            return result;
+          }
+        }
+
+        final long length = getLengthProperty(cx, items, false);
+        final Scriptable result = callConstructorOrCreateArray(cx, scope, thisObj, length, true);
+        for (long k = 0; k < length; k++) {
+            Object temp = getRawElem(items, k);
+            if (temp != Scriptable.NOT_FOUND) {
+                if (mapping) {
+                    temp = mapFn.call(cx, scope, thisArg, new Object[] { temp, k });
+                }
+                defineElem(cx, result, k, temp);
+            }
+        }
+
+        setLengthProperty(cx, result, length);
+        return result;
+    }
+
+    private static Object js_of(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+    {
+        final Scriptable result =
+            callConstructorOrCreateArray(cx, scope, thisObj, args.length, true);
+
+        for (int i = 0; i < args.length; i++) {
+            defineElem(cx, result, i, args[i]);
+        }
+        setLengthProperty(cx, result, args.length);
+
+        return result;
     }
 
     public long getLength() {
@@ -1063,7 +1173,7 @@ public class NativeArray extends IdScriptableObject implements List
             working[i] = getRawElem(thisObj, i);
         }
 
-        Sorting.hybridSort(working, comparator);
+        Sorting.get().hybridSort(working, comparator);
 
         // copy the working array back into thisObj
         for (int i = 0; i < length; ++i) {
@@ -1333,7 +1443,11 @@ public class NativeArray extends IdScriptableObject implements List
                 Object temp = getRawElem(thisObj, last);
                 setRawElem(cx, thisObj, last + delta, temp);
             }
-            for (long k = length + delta; k < length; ++k) {
+            // Do this backwards because some implementations might use a
+            // non-sparse array and therefore might not be able to handle
+            // deleting elements "in the middle". This makes us compatible
+            // with older Rhino releases.
+            for (long k = length - 1; k >= length + delta; --k) {
                 deleteElem(thisObj, k);
             }
         }
@@ -1349,6 +1463,75 @@ public class NativeArray extends IdScriptableObject implements List
         return result;
     }
 
+    private static boolean isConcatSpreadable(Context cx, Scriptable scope, Object val) {
+      // First, look for the new @@isConcatSpreadable test as per ECMAScript 6 and up
+      if (val instanceof Scriptable) {
+        final Object spreadable =
+            ScriptableObject.getProperty((Scriptable)val, SymbolKey.IS_CONCAT_SPREADABLE);
+         if ((spreadable != Scriptable.NOT_FOUND) && !Undefined.isUndefined(spreadable)) {
+          // If @@isConcatSpreadable was undefined, we have to fall back to testing for an array.
+          // Otherwise, we found some value
+          return ScriptRuntime.toBoolean(spreadable);
+        }
+      }
+
+      if (cx.getLanguageVersion() < Context.VERSION_ES6) {
+        // Otherwise, for older Rhino versions, fall back to the old algorithm, which treats things with
+        // the Array constructor as arrays. However, this is contrary to ES6!
+        final Function ctor = ScriptRuntime.getExistingCtor(cx, scope, "Array");
+        if (ScriptRuntime.instanceOf(val, ctor, cx)) {
+          return true;
+        }
+      }
+
+      // Otherwise, it's only spreadable if it's a native array
+      return js_isArray(val);
+    }
+
+    // Concat elements of "arg" into the destination, with optimizations for native,
+    // dense arrays.
+    private static long concatSpreadArg(Context cx,
+        Scriptable result, Scriptable arg, long offset) {
+      long srclen = getLengthProperty(cx, arg, false);
+      long newlen = srclen + offset;
+
+      // First, optimize for a pair of native, dense arrays
+      if ((newlen <= Integer.MAX_VALUE) && (result instanceof NativeArray)) {
+        final NativeArray denseResult = (NativeArray) result;
+        if (denseResult.denseOnly && (arg instanceof NativeArray)) {
+          final NativeArray denseArg = (NativeArray) arg;
+          if (denseArg.denseOnly) {
+            // Now we can optimize
+            denseResult.ensureCapacity((int) newlen);
+            System.arraycopy(denseArg.dense, 0, denseResult.dense, (int) offset, (int) srclen);
+            return newlen;
+          }
+          // We could also optimize here if we are copying to a dense target from a non-dense
+          // native array. However, if the source array is very sparse then the result will be
+          // very bad -- so don't.
+        }
+      }
+
+      // If we get here then we have to do things the generic way
+      long dstpos = offset;
+      for (long srcpos = 0; srcpos < srclen; srcpos++, dstpos++) {
+        final Object temp = getRawElem(arg, srcpos);
+        if (temp != Scriptable.NOT_FOUND) {
+          defineElem(cx, result, dstpos, temp);
+        }
+      }
+      return newlen;
+    }
+
+    private static long doConcat(Context cx, Scriptable scope,
+      Scriptable result, Object arg, long offset) {
+      if (isConcatSpreadable(cx, scope, arg)) {
+        return concatSpreadArg(cx, result, (Scriptable) arg, offset);
+      }
+      defineElem(cx, result, offset, arg);
+      return offset + 1;
+    }
+
     /*
      * See Ecma 262v3 15.4.4.4
      */
@@ -1357,86 +1540,14 @@ public class NativeArray extends IdScriptableObject implements List
     {
         // create an empty Array to return.
         scope = getTopLevelScope(scope);
-        Scriptable result = cx.newArray(scope, 0);
-        if (thisObj instanceof NativeArray && result instanceof NativeArray) {
-            NativeArray denseThis = (NativeArray) thisObj;
-            NativeArray denseResult = (NativeArray) result;
-            if (denseThis.denseOnly && denseResult.denseOnly) {
-                // First calculate length of resulting array
-                boolean canUseDense = true;
-                int length = (int) denseThis.length;
-                for (int i = 0; i < args.length && canUseDense; i++) {
-                    if (args[i] instanceof NativeArray) {
-                        // only try to use dense approach for Array-like
-                        // objects that are actually NativeArrays
-                        final NativeArray arg = (NativeArray) args[i];
-                        canUseDense = arg.denseOnly;
-                        length += arg.length;
-                    } else {
-                        length++;
-                    }
-                }
-                if (canUseDense && denseResult.ensureCapacity(length)) {
-                    System.arraycopy(denseThis.dense, 0, denseResult.dense,
-                                     0, (int) denseThis.length);
-                    int cursor = (int) denseThis.length;
-                    for (int i = 0; i < args.length && canUseDense; i++) {
-                        if (args[i] instanceof NativeArray) {
-                            NativeArray arg = (NativeArray) args[i];
-                            System.arraycopy(arg.dense, 0,
-                                    denseResult.dense, cursor,
-                                    (int)arg.length);
-                            cursor += (int)arg.length;
-                        } else {
-                            denseResult.dense[cursor++] = args[i];
-                        }
-                    }
-                    denseResult.length = length;
-                    return result;
-                }
-            }
+        final Scriptable result = cx.newArray(scope, 0);
+
+        long length = doConcat(cx, scope, result, thisObj, 0);
+        for (Object arg : args) {
+          length = doConcat(cx, scope, result, arg, length);
         }
 
-        long length;
-        long slot = 0;
-
-        /* Put the target in the result array; only add it as an array
-         * if it looks like one.
-         */
-        if (js_isArray(thisObj)) {
-            length = getLengthProperty(cx, thisObj, false);
-
-            // Copy from the target object into the result
-            for (slot = 0; slot < length; slot++) {
-                Object temp = getRawElem(thisObj, slot);
-                if (temp != NOT_FOUND) {
-                    defineElem(cx, result, slot, temp);
-                }
-            }
-        } else {
-            defineElem(cx, result, slot++, thisObj);
-        }
-
-        /* Copy from the arguments into the result.  If any argument
-         * has a numeric length property, treat it as an array and add
-         * elements separately; otherwise, just copy the argument.
-         */
-        for (int i = 0; i < args.length; i++) {
-            if (js_isArray(args[i])) {
-                // js_isArray => instanceof Scriptable
-                Scriptable arg = (Scriptable)args[i];
-                length = getLengthProperty(cx, arg, false);
-                for (long j = 0; j < length; j++, slot++) {
-                    Object temp = getRawElem(arg, j);
-                    if (temp != NOT_FOUND) {
-                        defineElem(cx, result, slot, temp);
-                    }
-                }
-            } else {
-                defineElem(cx, result, slot++, args[i]);
-            }
-        }
-        setLengthProperty(cx, result, slot);
+        setLengthProperty(cx, result, length);
         return result;
     }
 
@@ -1444,18 +1555,18 @@ public class NativeArray extends IdScriptableObject implements List
     {
         Scriptable scope = getTopLevelScope(this);
         Scriptable result = cx.newArray(scope, 0);
-        long length = getLengthProperty(cx, thisObj, false);
+        long len = getLengthProperty(cx, thisObj, false);
 
         long begin, end;
         if (args.length == 0) {
             begin = 0;
-            end = length;
+            end = len;
         } else {
-            begin = toSliceIndex(ScriptRuntime.toInteger(args[0]), length);
+            begin = toSliceIndex(ScriptRuntime.toInteger(args[0]), len);
             if (args.length == 1 || args[1] == Undefined.instance) {
-                end = length;
+                end = len;
             } else {
-                end = toSliceIndex(ScriptRuntime.toInteger(args[1]), length);
+                end = toSliceIndex(ScriptRuntime.toInteger(args[1]), len);
             }
         }
 
@@ -1630,6 +1741,81 @@ public class NativeArray extends IdScriptableObject implements List
         Object value = args.length > 0 ? args[0] : Undefined.instance;
         for (long i = k; i < fin; i++) {
             setRawElem(cx, thisObj, i, value);
+        }
+
+        return thisObj;
+    }
+
+    private static Object js_copyWithin(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+    {
+        Scriptable o = ScriptRuntime.toObject(cx, scope, thisObj);
+        long len = getLengthProperty(cx, o, false);
+
+        Object targetArg = (args.length >= 1) ? args[0] : Undefined.instance;
+        long relativeTarget = (long) ScriptRuntime.toInteger(targetArg);
+        long to;
+        if (relativeTarget < 0) {
+            to = Math.max((len + relativeTarget), 0);
+        }
+        else {
+            to = Math.min(relativeTarget, len);
+        }
+
+        Object startArg = (args.length >= 2) ? args[1] : Undefined.instance;
+        long relativeStart = (long) ScriptRuntime.toInteger(startArg);
+        long from;
+        if (relativeStart < 0) {
+            from = Math.max((len + relativeStart), 0);
+        }
+        else {
+            from = Math.min(relativeStart, len);
+        }
+
+        long relativeEnd = len;
+        if (args.length >= 3 && !Undefined.isUndefined(args[2])) {
+            relativeEnd = (long) ScriptRuntime.toInteger(args[2]);
+        }
+        final long fin;
+        if (relativeEnd < 0) {
+            fin = Math.max((len + relativeEnd), 0);
+        }
+        else {
+            fin = Math.min(relativeEnd, len);
+        }
+
+        long count = Math.min(fin - from, len - to);
+        int direction = 1;
+        if (from < to && to < from + count) {
+            direction = -1;
+            from = from + count - 1;
+            to = to + count - 1;
+        }
+
+        // Optimize for a native array. If properties were overridden with setters
+        // and other non-default options then we won't get here.
+        if ((o instanceof NativeArray) && (count <= Integer.MAX_VALUE)) {
+            NativeArray na = (NativeArray) o;
+            if (na.denseOnly) {
+                for (; count > 0; count--) {
+                    na.dense[(int)to] = na.dense[(int)from];
+                    from += direction;
+                    to += direction;
+                }
+
+                return thisObj;
+            }
+        }
+
+        for (; count > 0; count--) {
+            final Object temp = getRawElem(o, from);
+            if ((temp == Scriptable.NOT_FOUND) || Undefined.isUndefined(temp)) {
+                deleteElem(o, to);
+            } else {
+                setElem(cx, o, to, temp);
+            }
+
+            from += direction;
+            to += direction;
         }
 
         return thisObj;
@@ -2103,7 +2289,7 @@ public class NativeArray extends IdScriptableObject implements List
     protected int findPrototypeId(String s)
     {
         int id;
-// #generated# Last update: 2019-03-10 12:44:45 MEZ
+// #generated# Last update: 2019-05-11 10:25:01 MESZ
         L0: { id = 0; String X = null; int c;
             L: switch (s.length()) {
             case 3: c=s.charAt(0);
@@ -2144,6 +2330,7 @@ public class NativeArray extends IdScriptableObject implements List
                 else if (c=='t') { X="toString";id=Id_toString; }
                 break L;
             case 9: X="findIndex";id=Id_findIndex; break L;
+            case 10: X="copyWithin";id=Id_copyWithin; break L;
             case 11: c=s.charAt(0);
                 if (c=='c') { X="constructor";id=Id_constructor; }
                 else if (c=='l') { X="lastIndexOf";id=Id_lastIndexOf; }
@@ -2189,7 +2376,8 @@ public class NativeArray extends IdScriptableObject implements List
         Id_values               = 28,
         Id_entries              = 29,
         Id_includes             = 30,
-        SymbolId_iterator       = 31,
+        Id_copyWithin           = 31,
+        SymbolId_iterator       = 32,
 
         MAX_PROTOTYPE_ID        = SymbolId_iterator;
 
@@ -2217,7 +2405,9 @@ public class NativeArray extends IdScriptableObject implements List
         ConstructorId_findIndex            = -Id_findIndex,
         ConstructorId_reduce               = -Id_reduce,
         ConstructorId_reduceRight          = -Id_reduceRight,
-        ConstructorId_isArray              = -26;
+        ConstructorId_isArray              = -26,
+        ConstructorId_of                   = -27,
+        ConstructorId_from                 = -28;
 
     /**
      * Internal representation of the JavaScript array's length property.

@@ -92,6 +92,20 @@ public class ParserTest extends TestCase {
         assertEquals("var s = 3;\n/* */\n\n/* txt */\n\nvar t = 1;\n", root.toSource());
     }
 
+    public void testNewlineAndCommentsFunction() {
+        AstRoot root = parse(
+            "f('2345' // Second arg\n);");
+        assertNotNull(root.getComments());
+        assertEquals(1, root.getComments().size());
+    }
+
+    public void testNewlineAndCommentsFunction2() {
+        AstRoot root = parse(
+            "f('1234',\n// Before\n'2345' // Second arg\n);");
+        assertNotNull(root.getComments());
+        assertEquals(2, root.getComments().size());
+    }
+
     public void testAutoSemiBeforeComment1() {
         parse("var a = 1\n/** a */ var b = 2");
     }
@@ -1328,34 +1342,39 @@ public class ParserTest extends TestCase {
     private AstRoot parse(
         String string, final String [] errors, final String [] warnings,
         boolean jsdoc) {
+        return parse(string, errors, warnings, jsdoc, environment);
+    }
+
+    static AstRoot parse(String string, final String [] errors, final String [] warnings,
+        boolean jsdoc, CompilerEnvirons env) {
         TestErrorReporter testErrorReporter =
             new TestErrorReporter(errors, warnings) {
-          @Override
-          public EvaluatorException runtimeError(
-               String message, String sourceName, int line, String lineSource,
-               int lineOffset) {
-             if (errors == null) {
-               throw new UnsupportedOperationException();
-             }
-             return new EvaluatorException(
-               message, sourceName, line, lineSource, lineOffset);
-           }
-        };
-        environment.setErrorReporter(testErrorReporter);
+                @Override
+                public EvaluatorException runtimeError(
+                    String message, String sourceName, int line, String lineSource,
+                    int lineOffset) {
+                    if (errors == null) {
+                        throw new UnsupportedOperationException();
+                    }
+                    return new EvaluatorException(
+                        message, sourceName, line, lineSource, lineOffset);
+                }
+            };
+        env.setErrorReporter(testErrorReporter);
 
-        environment.setRecordingComments(true);
-        environment.setRecordingLocalJsDocComments(jsdoc);
+        env.setRecordingComments(true);
+        env.setRecordingLocalJsDocComments(jsdoc);
 
-        Parser p = new Parser(environment, testErrorReporter);
+        Parser p = new Parser(env, testErrorReporter);
         AstRoot script = null;
         try {
-          script = p.parse(string, null, 0);
+            script = p.parse(string, null, 0);
         } catch (EvaluatorException e) {
-          if (errors == null) {
-            // EvaluationExceptions should not occur when we aren't expecting
-            // errors.
-            throw e;
-          }
+            if (errors == null) {
+                // EvaluationExceptions should not occur when we aren't expecting
+                // errors.
+                throw e;
+            }
         }
 
         assertTrue(testErrorReporter.hasEncounteredAllErrors());

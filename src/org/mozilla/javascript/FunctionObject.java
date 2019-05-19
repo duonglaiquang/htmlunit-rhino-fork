@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -84,14 +83,13 @@ public class FunctionObject extends BaseFunction
      * @param scope enclosing scope of function
      * @see org.mozilla.javascript.Scriptable
      */
-    public FunctionObject(String name, Member methodOrConstructor,
-                          Scriptable scope)
+    public FunctionObject(String name, Executable methodOrConstructor, Scriptable scope)
     {
         if (methodOrConstructor instanceof Constructor) {
-            member = new MemberBox((Constructor<?>) methodOrConstructor);
+            member = new MemberBox(methodOrConstructor);
             isStatic = true; // well, doesn't take a 'this'
         } else {
-            member = new MemberBox((Method) methodOrConstructor);
+            member = new MemberBox(methodOrConstructor);
             isStatic = member.isStatic();
         }
         String methodName = member.getName();
@@ -202,7 +200,7 @@ public class FunctionObject extends BaseFunction
           case JAVA_DOUBLE_TYPE:
             if (arg instanceof Double)
                 return arg;
-            return new Double(ScriptRuntime.toNumber(arg));
+            return Double.valueOf(ScriptRuntime.toNumber(arg));
           case JAVA_SCRIPTABLE_TYPE:
               return ScriptRuntime.toObjectOrNull(cx, arg, scope);
           case JAVA_OBJECT_TYPE:
@@ -390,9 +388,9 @@ public class FunctionObject extends BaseFunction
                 boolean inNewExpr = (thisObj == null);
                 Boolean b = inNewExpr ? Boolean.TRUE : Boolean.FALSE;
                 Object[] invokeArgs = { cx, args, this, b };
-                result = (member.isCtor())
-                         ? member.newInstance(invokeArgs)
-                         : member.invoke(null, invokeArgs);
+                result = (member.isMethod())
+                         ? member.invoke(null, invokeArgs)
+                         : member.newInstance(invokeArgs);
             }
 
         } else {
@@ -481,7 +479,7 @@ public class FunctionObject extends BaseFunction
      */
     @Override
     public Scriptable createObject(Context cx, Scriptable scope) {
-        if (member.isCtor() || parmsLength == VARARGS_CTOR) {
+        if (!member.isMethod() || parmsLength == VARARGS_CTOR) {
             return null;
         }
         Scriptable result;
