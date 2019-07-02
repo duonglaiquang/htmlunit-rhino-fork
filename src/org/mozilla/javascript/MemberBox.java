@@ -11,8 +11,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -28,8 +28,10 @@ final class MemberBox implements Serializable
 {
     private static final long serialVersionUID = 6358550398665688245L;
 
-    private transient Executable executableObject;
-    Object delegateTo;
+    private transient Member memberObject;
+    transient Class<?>[] argTypes;
+    transient Object delegateTo;
+    transient boolean vararg;
     transient Function asFunction;
 
     /**
@@ -62,76 +64,93 @@ final class MemberBox implements Serializable
         return asFunction;
     }
 
-    MemberBox(Executable executable)
+    MemberBox(Method method)
     {
-        this.executableObject = executable;
+        init(method);
     }
 
-    Executable member()
+    MemberBox(Constructor<?> constructor)
     {
-        return executableObject;
+        init(constructor);
     }
 
-    Class<?>[] getParameterTypes()
+    private void init(Method method)
     {
-        return executableObject.getParameterTypes();
+        this.memberObject = method;
+        this.argTypes = method.getParameterTypes();
+        this.vararg = method.isVarArgs();
     }
 
-    Class<?> getReturnType()
+    private void init(Constructor<?> constructor)
     {
-        return ((Method)executableObject).getReturnType();
+        this.memberObject = constructor;
+        this.argTypes = constructor.getParameterTypes();
+        this.vararg = constructor.isVarArgs();
     }
 
-    boolean isVarArgs()
+    Method method()
     {
-        return executableObject.isVarArgs();
+        return (Method)memberObject;
     }
 
-    int getParameterCount() {
-        return executableObject.getParameterCount();
+    Constructor<?> ctor()
+    {
+        return (Constructor<?>)memberObject;
+    }
+
+    Member member()
+    {
+        return memberObject;
     }
 
     boolean isMethod()
     {
-        return executableObject instanceof Method;
+        return memberObject instanceof Method;
+    }
+
+    boolean isCtor()
+    {
+        return memberObject instanceof Constructor;
     }
 
     boolean isStatic()
     {
-        return Modifier.isStatic(executableObject.getModifiers());
+        return Modifier.isStatic(memberObject.getModifiers());
     }
 
     boolean isPublic()
     {
-        return Modifier.isPublic(executableObject.getModifiers());
+        return Modifier.isPublic(memberObject.getModifiers());
     }
 
     String getName()
     {
-        return executableObject.getName();
+        return memberObject.getName();
     }
 
     Class<?> getDeclaringClass()
     {
-        return executableObject.getDeclaringClass();
+        return memberObject.getDeclaringClass();
     }
 
     String toJavaDeclaration()
     {
         StringBuilder sb = new StringBuilder();
         if (isMethod()) {
-            sb.append(getReturnType());
+            Method method = method();
+            sb.append(method.getReturnType());
             sb.append(' ');
-            sb.append(executableObject.getName());
+            sb.append(method.getName());
         } else {
-            String name = executableObject.getDeclaringClass().getName();
+            Constructor<?> ctor = ctor();
+            String name = ctor.getDeclaringClass().getName();
             int lastDot = name.lastIndexOf('.');
             if (lastDot >= 0) {
                 name = name.substring(lastDot + 1);
             }
             sb.append(name);
         }
-        sb.append(JavaMembers.liveConnectSignature(getParameterTypes()));
+        sb.append(JavaMembers.liveConnectSignature(argTypes));
         return sb.toString();
     }
 
@@ -142,7 +161,7 @@ final class MemberBox implements Serializable
         if (!context.hasFeature(Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME)) {
             return "function () { [native code] }";
         }
-        String name = executableObject.getName();
+        String name = memberObject.getName();
         name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
         if (context.hasFeature(Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE)) {
             return "\nfunction " + name + "() {\n    [native code]\n}\n";
@@ -163,14 +182,14 @@ final class MemberBox implements Serializable
             }
         }
         
-        Method method = (Method)executableObject;
+        Method method = method();
         try {
             try {
                 return method.invoke(target, args);
             } catch (IllegalAccessException ex) {
-                Method accessible = searchAccessibleMethod(method, getParameterTypes());
+                Method accessible = searchAccessibleMethod(method, argTypes);
                 if (accessible != null) {
-                    executableObject = accessible;
+                    memberObject = accessible;
                     method = accessible;
                 } else {
                     if (!VMBridge.instance.tryToMakeAccessible(method)) {
@@ -211,7 +230,7 @@ final class MemberBox implements Serializable
 
     Object newInstance(Object[] args)
     {
-        Constructor<?> ctor = (Constructor<?>)executableObject;
+        Constructor<?> ctor = ctor();
         try {
             try {
                 return ctor.newInstance(args);
@@ -268,14 +287,19 @@ final class MemberBox implements Serializable
         throws IOException, ClassNotFoundException
     {
         in.defaultReadObject();
-        executableObject = readMember(in);
+        Member member = readMember(in);
+        if (member instanceof Method) {
+            init((Method)member);
+        } else {
+            init((Constructor<?>)member);
+        }
     }
 
     private void writeObject(ObjectOutputStream out)
         throws IOException
     {
         out.defaultWriteObject();
-        writeMember(out, executableObject);
+        writeMember(out, memberObject);
     }
 
     /**
@@ -285,7 +309,7 @@ final class MemberBox implements Serializable
      * information about the class, the name, and the parameters and
      * recreate upon deserialization.
      */
-    private static void writeMember(ObjectOutputStream out, Executable member)
+    private static void writeMember(ObjectOutputStream out, Member member)
         throws IOException
     {
         if (member == null) {
@@ -298,13 +322,17 @@ final class MemberBox implements Serializable
         out.writeBoolean(member instanceof Method);
         out.writeObject(member.getName());
         out.writeObject(member.getDeclaringClass());
-        writeParameters(out, member.getParameterTypes());
+        if (member instanceof Method) {
+            writeParameters(out, ((Method) member).getParameterTypes());
+        } else {
+            writeParameters(out, ((Constructor<?>) member).getParameterTypes());
+        }
     }
 
     /**
      * Reads a Method or a Constructor from the stream.
      */
-    private static Executable readMember(ObjectInputStream in)
+    private static Member readMember(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
         if (!in.readBoolean())
