@@ -378,7 +378,7 @@ public class ScriptRuntime {
 
     public static Number wrapNumber(double x)
     {
-        if (x != x) {
+        if (Double.isNaN(x)) {
             return ScriptRuntime.NaNobj;
         }
         return new Double(x);
@@ -400,7 +400,7 @@ public class ScriptRuntime {
                 return ((CharSequence) val).length() != 0;
             if (val instanceof Number) {
                 double d = ((Number) val).doubleValue();
-                return (d == d && d != 0.0);
+                return (!Double.isNaN(d) && d != 0.0);
             }
             if (val instanceof Scriptable) {
                 if (val instanceof ScriptableObject &&
@@ -921,7 +921,7 @@ public class ScriptRuntime {
                 "msg.bad.radix", Integer.toString(base));
         }
 
-        if (d != d)
+        if (Double.isNaN(d))
             return "NaN";
         if (d == Double.POSITIVE_INFINITY)
             return "Infinity";
@@ -1224,7 +1224,7 @@ public class ScriptRuntime {
     // convenience method
     public static double toInteger(double d) {
         // if it's NaN
-        if (d != d)
+        if (Double.isNaN(d))
             return +0.0;
 
         if (d == 0.0 ||
@@ -2175,19 +2175,18 @@ public class ScriptRuntime {
      * to see if a given property has already been enumerated.
      *
      */
-    private static class IdEnumeration implements Serializable
-    {
+    private static class IdEnumeration implements Serializable {
         private static final long serialVersionUID = 1L;
         Scriptable obj;
         Object[] ids;
-        int index;
         ObjToIntMap used;
         Object currentId;
+        int index;
         int enumType; /* one of ENUM_INIT_KEYS, ENUM_INIT_VALUES,
                          ENUM_INIT_ARRAY, ENUMERATE_VALUES_IN_ORDER */
 
         // if true, integer ids will be returned as numbers rather than strings
-        boolean enumNumbers;
+       boolean enumNumbers;
 
         Scriptable iterator;
     }
@@ -2279,15 +2278,11 @@ public class ScriptRuntime {
     }
 
     private static Object enumInitInOrder(Context cx, IdEnumeration x) {
-        if (!(x.obj instanceof ScriptableObject)) {
+        if (!(x.obj instanceof SymbolScriptable) || !ScriptableObject.hasProperty(x.obj, SymbolKey.ITERATOR)) {
             throw typeError1("msg.not.iterable", toString(x.obj));
         }
 
-        ScriptableObject xo = (ScriptableObject)x.obj;
-        if (!ScriptableObject.hasProperty(xo, SymbolKey.ITERATOR)) {
-            throw typeError1("msg.not.iterable", toString(x.obj));
-        }
-        Object iterator = ScriptableObject.getProperty(xo, SymbolKey.ITERATOR);
+        Object iterator = ScriptableObject.getProperty(x.obj, SymbolKey.ITERATOR);
         if (!(iterator instanceof Callable)) {
             throw typeError1("msg.not.iterable", toString(x.obj));
         }
@@ -3419,7 +3414,7 @@ public class ScriptRuntime {
             }
             // NaN check
             double d = ((Number)x).doubleValue();
-            return d == d;
+            return !Double.isNaN(d);
         }
         if (x == null || x == Undefined.instance || x == Undefined.SCRIPTABLE_UNDEFINED) {
             if ((x == Undefined.instance && y == Undefined.SCRIPTABLE_UNDEFINED)

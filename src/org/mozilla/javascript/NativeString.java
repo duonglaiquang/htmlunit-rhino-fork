@@ -619,7 +619,7 @@ final class NativeString extends IdScriptableObject
 
         if (position < 0) position = 0;
         else if (position > target.length()) position = target.length();
-        else if (methodId == Id_endsWith && (position != position  || position > target.length())) position = target.length();
+        else if (methodId == Id_endsWith && (Double.isNaN(position) || position > target.length())) position = target.length();
 
         if (Id_endsWith == methodId) {
             if (args.length == 0 || args.length == 1 || (args.length == 2 && args[1] == Undefined.instance)) position = target.length();
@@ -639,7 +639,7 @@ final class NativeString extends IdScriptableObject
         String search = ScriptRuntime.toString(args, 0);
         double end = ScriptRuntime.toNumber(args, 1);
 
-        if (end != end || end > target.length())
+        if (Double.isNaN(end) || end > target.length())
             end = target.length();
         else if (end < 0)
             end = 0;

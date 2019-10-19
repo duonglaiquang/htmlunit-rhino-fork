@@ -299,6 +299,9 @@ public class ContextFactory
           case Context.FEATURE_LITTLE_ENDIAN:
               return false;
 
+          case Context.FEATURE_ENABLE_XML_SECURE_PARSING:
+              return true;
+
           case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
             return false;
 

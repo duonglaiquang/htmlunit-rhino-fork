@@ -4,7 +4,12 @@
 
 package org.mozilla.javascript.tests;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 import org.junit.Assert;
+import org.mozilla.classfile.ClassFileWriter.ClassFileFormatException;
+import org.mozilla.javascript.NativeFunction;
 import org.mozilla.javascript.Script;
 
 import junit.framework.TestCase;
@@ -41,6 +46,18 @@ public class CodegenTest extends TestCase {
             Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
             return null;
         });
+
+        Utils.runWithAllOptimizationLevels(_cx -> {
+            try {
+                Script script = _cx.compileReader(new StringReader(scriptSource.toString()), "test-source", 1, null);
+                Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+                Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
+                return null;
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+                return null;
+            }
+        });
     }
 
     public void testLargeVarList() {
@@ -67,7 +84,20 @@ public class CodegenTest extends TestCase {
         Utils.runWithAllOptimizationLevels(_cx -> {
             Script script = _cx.compileString(scriptSource.toString(), "test-source", 1, null);
             Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+            Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
             return null;
+        });
+
+        Utils.runWithAllOptimizationLevels(_cx -> {
+            try {
+                Script script = _cx.compileReader(new StringReader(scriptSource.toString()), "test-source", 1, null);
+                Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+                Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
+                return null;
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+                return null;
+            }
         });
     }
 
@@ -99,7 +129,20 @@ public class CodegenTest extends TestCase {
         Utils.runWithAllOptimizationLevels(_cx -> {
             Script script = _cx.compileString(scriptSource.toString(), "test-source", 1, null);
             Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+            Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
             return null;
+        });
+
+        Utils.runWithAllOptimizationLevels(_cx -> {
+            try {
+                Script script = _cx.compileReader(new StringReader(scriptSource.toString()), "test-source", 1, null);
+                Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+                Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
+                return null;
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+                return null;
+            }
         });
     }
 
@@ -125,9 +168,22 @@ public class CodegenTest extends TestCase {
         }
 
         Utils.runWithAllOptimizationLevels(_cx -> {
-            Script a = _cx.compileString(scriptSource.toString(), "test-source", 1, null);
-            Assert.assertTrue(a.getClass().getName(), a.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+            Script script = _cx.compileString(scriptSource.toString(), "test-source", 1, null);
+            Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+            Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
             return null;
+        });
+
+        Utils.runWithAllOptimizationLevels(_cx -> {
+            try {
+                Script script = _cx.compileReader(new StringReader(scriptSource.toString()), "test-source", 1, null);
+                Assert.assertTrue(script.getClass().getName(), script.getClass().getName().startsWith("org.mozilla.javascript.InterpretedFunction"));
+                Assert.assertTrue("" + ((NativeFunction)script).getEncodedSource().length(), ((NativeFunction)script).getEncodedSource().length() > 1000);
+                return null;
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+                return null;
+            }
         });
     }
 
