@@ -165,7 +165,6 @@ final class NativeError extends IdScriptableObject
         // generated on demand, is cached after the first access, and is
         // overwritable like an ordinary property. Hence this setup with
         // the getter and setter below.
-
         if (stackProvider == null) {
             stackProvider = re;
             defineProperty("stack", this,
@@ -197,14 +196,11 @@ final class NativeError extends IdScriptableObject
         // Determine whether to format the stack trace ourselves, or call the user's code to do it
         Object value;
         if (prepare == null) {
-            RhinoException.useMozillaStackStyle(true);
             value = RhinoException.formatStackTrace(stack, stackProvider.details());
-            RhinoException.useMozillaStackStyle(false);
         } else {
             value = callPrepareStack(prepare, stack);
         }
 
-        RhinoException.useMozillaStackStyle(false);
         // We store the stack as local property both to cache it
         // and to make the property writable
         setStackDelegated(target, value);
