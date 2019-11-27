@@ -122,11 +122,6 @@ public abstract class ScriptableObject implements Scriptable,
     // Where external array data is stored.
     private transient ExternalArrayData externalData;
 
-    // gateways into the definition-order linked list of slots
-    private transient Slot firstAdded;
-    private transient Slot lastAdded;
-
-
     private volatile Map<Object,Object> associatedValues;
 
     enum SlotAccess {
