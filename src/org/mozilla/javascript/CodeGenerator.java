@@ -6,15 +6,12 @@
 
 package org.mozilla.javascript;
 
-import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.AstRoot;
 import org.mozilla.javascript.ast.Block;
-import org.mozilla.javascript.ast.FunctionCall;
 import org.mozilla.javascript.ast.FunctionNode;
 import org.mozilla.javascript.ast.Jump;
 import org.mozilla.javascript.ast.Scope;
 import org.mozilla.javascript.ast.ScriptNode;
-import org.mozilla.javascript.ast.UnaryExpression;
 import org.mozilla.javascript.ast.VariableInitializer;
 
 /**

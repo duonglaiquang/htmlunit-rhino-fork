@@ -6,8 +6,6 @@
 
 package org.mozilla.javascript;
 
-import org.mozilla.javascript.debug.DebuggableScript;
-
 /**
  * This class implements the activation object.
  *
