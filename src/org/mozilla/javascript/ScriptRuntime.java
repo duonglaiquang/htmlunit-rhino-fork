@@ -3694,28 +3694,13 @@ public class ScriptRuntime {
                 // Don't overwrite existing def if already defined in object
                 // or prototypes of object.
                 if (!ScriptableObject.hasProperty(scope, name)) {
-                    if (!evalScript) {
-                        // Global var definitions are supposed to be DONTDELETE
-                        if (isConst)
-                            ScriptableObject.defineConstProperty(varScope, name);
-                        else {
-                            boolean define = true;
-                            if (funObj instanceof InterpretedFunction) {
-                                InterpreterData idata = ((InterpretedFunction) funObj).idata;
-                                for (int f = 0; f < idata.getFunctionCount(); f++) {
-                                    InterpreterData functionData = (InterpreterData) idata.getFunction(f);
-                                    if (!functionData.declaredAsFunctionExpression
-                                            && name.equals(functionData.getFunctionName())) {
-                                        define = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (define) {
-                                ScriptableObject.defineProperty(
-                                        varScope, name, Undefined.instance,
-                                        ScriptableObject.PERMANENT);
-                            }
+                    if (isConst) {
+                        ScriptableObject.defineConstProperty(varScope, name);
+                    } else if (!evalScript) {
+                        if (!(funObj instanceof InterpretedFunction)
+                            || ((InterpretedFunction) funObj).hasFunctionNamed(name)) {
+                            // Global var definitions are supposed to be DONTDELETE
+                            ScriptableObject.defineProperty(varScope, name, Undefined.instance, ScriptableObject.PERMANENT);
                         }
                     } else {
                         varScope.put(name, varScope, Undefined.instance);
@@ -4368,24 +4353,20 @@ public class ScriptRuntime {
 
     public static RuntimeException undefReadError(Object object, Object id)
     {
-        final String idStr = toString(id);
-        return typeError2("msg.undef.prop.read", toString(object), idStr);
+        return typeError2("msg.undef.prop.read", toString(object), toString(id));
     }
 
     public static RuntimeException undefCallError(Object object, Object id)
     {
-        final String idStr = toString(id);
-        return typeError2("msg.undef.method.call", toString(object), idStr);
+        return typeError2("msg.undef.method.call", toString(object), toString(id));
     }
 
     public static RuntimeException undefWriteError(Object object,
                                                    Object id,
                                                    Object value)
     {
-        final String idStr = toString(id);
-        final String valueStr = toString(value);
-        return typeError3("msg.undef.prop.write", toString(object), idStr,
-                          valueStr);
+        return typeError3("msg.undef.prop.write", toString(object), toString(id),
+                          toString(value));
     }
 
     private static RuntimeException undefDeleteError(Object object, Object id)

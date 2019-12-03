@@ -72,6 +72,10 @@ final class NativeBoolean extends IdScriptableObject
             if (args.length == 0) {
                 b = false;
             } else {
+                // see special handling in ScriptRuntime.toBoolean(Object)
+                // avoidObjectDetection() is used to implement document.all
+                // see Note on page
+                //   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
                 b = args[0] instanceof ScriptableObject &&
                         ((ScriptableObject) args[0]).avoidObjectDetection()
                     ? false
