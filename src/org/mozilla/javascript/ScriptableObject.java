@@ -376,10 +376,13 @@ public abstract class ScriptableObject implements Scriptable,
 
     private SlotMapContainer createSlotMap(int initialSize)
     {
-        Context cx = Context.getCurrentContext();
-        if ((cx != null) && cx.hasFeature(Context.FEATURE_THREAD_SAFE_OBJECTS)) {
-            return new ThreadSafeSlotMapContainer(initialSize);
-        }
+        // HtmlUnit disable this check because we do not use this feature
+        // and this creates many many expensive calls to Context.getCurrentContext();
+        //
+        // Context cx = Context.getCurrentContext();
+        // if ((cx != null) && cx.hasFeature(Context.FEATURE_THREAD_SAFE_OBJECTS)) {
+        //     return new ThreadSafeSlotMapContainer(initialSize);
+        // }
         return new SlotMapContainer(initialSize);
     }
 
