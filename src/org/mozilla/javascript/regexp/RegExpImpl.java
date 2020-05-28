@@ -113,6 +113,7 @@ public class RegExpImpl implements RegExpProxy {
                     int index = str.indexOf(search);
                     if (index >= 0) {
                         int slen = search.length();
+                        this.parens = null;
                         this.lastParen = null;
                         this.leftContext = new SubString(str, 0, index);
                         this.lastMatch = new SubString(str, index, slen);
@@ -550,8 +551,12 @@ public class RegExpImpl implements RegExpProxy {
         if (limited) {
             /* Clamp limit between 0 and 1 + string length. */
             limit = ScriptRuntime.toUint32(args[1]);
-            if (limit > target.length())
+            if (limit == 0) {
+                return result;
+            }
+            if (limit > target.length()) {
                 limit = 1 + target.length();
+            }
         }
 
         // return an array consisting of the target if no separator given
@@ -752,8 +757,7 @@ public class RegExpImpl implements RegExpProxy {
 
     protected String          input;         /* input string to match (perl $_, GC root) */
     protected boolean         multiline;     /* whether input contains newlines (perl $*) */
-    protected SubString[]     parens;        /* Vector of SubString; last set of parens
-                                      matched (perl $1, $2) */
+    protected SubString[]     parens;        /* Vector of SubString; last set of parens matched (perl $1, $2) */
     protected SubString       lastMatch;     /* last string matched (perl $&) */
     protected SubString       lastParen;     /* last paren matched (perl $+) */
     protected SubString       leftContext;   /* input to left of last match (perl $`) */

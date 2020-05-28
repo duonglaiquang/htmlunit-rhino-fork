@@ -494,7 +494,7 @@ public class Context
      */
     public static Context enter()
     {
-        return enter(null);
+        return enter(null, ContextFactory.getGlobal());
     }
 
     /**

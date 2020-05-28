@@ -1727,10 +1727,17 @@ public class ScriptRuntime {
                                        Object value, Context cx,
                                        Scriptable scope)
     {
+        if (!(obj instanceof Scriptable)
+                && cx.isStrictMode()
+                && cx.getLanguageVersion() >= Context.VERSION_1_8) {
+            throw undefWriteError(obj, property, value);
+        }
+
         Scriptable sobj = toObjectOrNull(cx, obj, scope);
         if (sobj == null) {
             throw undefWriteError(obj, property, value);
         }
+
         return setObjectProp(sobj, property, value, cx);
     }
 
@@ -4581,8 +4588,8 @@ public class ScriptRuntime {
      * by using an "instanceof" check.
      */
     static boolean isSymbol(Object obj) {
-        return (((obj instanceof NativeSymbol) &&
-                ((NativeSymbol)obj).isSymbol())) || (obj instanceof SymbolKey);
+        return (( (obj instanceof NativeSymbol) && ((NativeSymbol)obj).isSymbol()))
+                    || (obj instanceof SymbolKey);
     }
 
     private static RuntimeException errorWithClassName(String msg, Object val)
