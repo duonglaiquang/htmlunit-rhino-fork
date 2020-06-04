@@ -2847,9 +2847,6 @@ public class Context
     int instructionCount;
     int instructionThreshold;
 
-    // It can be used to return the second index-like result from function
-    int scratchIndex;
-
     // It can be used to return the second uint32 result from function
     long scratchUint32;
 

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.mozilla.javascript.ScriptRuntime.StringIdOrIndex;
 import org.mozilla.javascript.annotations.JSConstructor;
 import org.mozilla.javascript.annotations.JSFunction;
 import org.mozilla.javascript.annotations.JSGetter;
@@ -977,6 +978,10 @@ public abstract class ScriptableObject implements Scriptable,
     @Override
     public void setPrototype(Scriptable m)
     {
+        if (!isExtensible()
+                && Context.getContext().getLanguageVersion() >= Context.VERSION_1_8) {
+            throw ScriptRuntime.typeError0("msg.not.extensible");
+        }
         prototypeObject = m;
     }
 
@@ -3028,11 +3033,11 @@ public abstract class ScriptableObject implements Scriptable,
         if (id instanceof Symbol) {
             return slotMap.get(id, 0, accessType);
         }
-        String name = ScriptRuntime.toStringIdOrIndex(cx, id);
-        if (name == null) {
-            return slotMap.get(null, ScriptRuntime.lastIndexResult(cx), accessType);
+        StringIdOrIndex s = ScriptRuntime.toStringIdOrIndex(cx, id);
+        if (s.stringId == null) {
+            return slotMap.get(null, s.index, accessType);
         }
-        return slotMap.get(name, 0, accessType);
+        return slotMap.get(s.stringId, 0, accessType);
     }
 
     // Partial implementation of java.util.Map. See NativeObject for
