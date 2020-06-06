@@ -183,6 +183,7 @@ public class NodeTransformer
                 break;
 
               case Token.YIELD:
+              case Token.YIELD_STAR:
                 ((FunctionNode)tree).addResumptionPoint(node);
                 break;
 

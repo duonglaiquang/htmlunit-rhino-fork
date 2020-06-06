@@ -873,7 +873,12 @@ public class Parser
         }
     }
 
-    private FunctionNode function(int type)
+    private FunctionNode function(int type) 
+        throws IOException {
+        return function(type, false);
+    }
+
+    private FunctionNode function(int type, boolean isGenerator)
         throws IOException
     {
         int syntheticType = type;
@@ -900,6 +905,10 @@ public class Parser
             }
         } else if (matchToken(Token.LP, true)) {
             // Anonymous function:  leave name as null
+        } else if (matchToken(Token.MUL, true) &&
+                   (compilerEnv.getLanguageVersion() >= Context.VERSION_ES6)) {
+            // ES6 generator function
+            return function(type, true);
         } else {
             if (compilerEnv.isAllowMemberExprAsFunctionName()) {
                 // Note that memberExpr can not start with '(' like
@@ -923,6 +932,9 @@ public class Parser
 
         FunctionNode fnNode = new FunctionNode(functionSourceStart, name);
         fnNode.setFunctionType(type);
+        if (isGenerator) {
+            fnNode.setIsES6Generator();
+        }
         if (lpPos != -1)
             fnNode.setLp(lpPos - functionSourceStart);
 
@@ -1924,12 +1936,26 @@ public class Parser
         consumeToken();
         int lineno = ts.lineno, pos = ts.tokenBeg, end = ts.tokenEnd;
 
+        boolean yieldStar = false;
+        if ((tt == Token.YIELD) &&
+            (compilerEnv.getLanguageVersion() >= Context.VERSION_ES6) &&
+            (peekToken() == Token.MUL)) {
+          yieldStar = true;
+          consumeToken();
+        }
+
         AstNode e = null;
         // This is ugly, but we don't want to require a semicolon.
         switch (peekTokenOrEOL()) {
           case Token.SEMI: case Token.RC:  case Token.RB:    case Token.RP:
-          case Token.EOF:  case Token.EOL: case Token.ERROR: case Token.YIELD:
+          case Token.EOF:  case Token.EOL: case Token.ERROR:
             break;
+          case Token.YIELD:
+            if (compilerEnv.getLanguageVersion() < Context.VERSION_ES6) {
+                // Take extra care to preserve language compatibility
+                break;
+            }
+            // fallthrough
           default:
             e = expr();
             end = getNodeEnd(e);
@@ -1950,7 +1976,7 @@ public class Parser
             if (!insideFunction())
                 reportError("msg.bad.yield");
             endFlags |= Node.END_YIELDS;
-            ret = new Yield(pos, end - pos, e);
+            ret = new Yield(pos, end - pos, e, yieldStar);
             setRequiresActivation();
             setIsGenerator();
             if (!exprContext) {
@@ -1962,11 +1988,15 @@ public class Parser
         if (insideFunction()
             && nowAllSet(before, endFlags,
                     Node.END_YIELDS|Node.END_RETURNS_VALUE)) {
-            Name name = ((FunctionNode)currentScriptOrFn).getFunctionName();
-            if (name == null || name.length() == 0)
-                addError("msg.anon.generator.returns", "");
-            else
-                addError("msg.generator.returns", name.getIdentifier());
+            FunctionNode fn = (FunctionNode)currentScriptOrFn;
+            if (!fn.isES6Generator()) {
+                Name name = ((FunctionNode)currentScriptOrFn).getFunctionName();
+                if (name == null || name.length() == 0) {
+                    addError("msg.anon.generator.returns", "");
+                } else {
+                    addError("msg.generator.returns", name.getIdentifier());
+                }
+            }
         }
 
         ret.setLineno(lineno);

@@ -203,6 +203,7 @@ public final class IRFactory extends Parser
           case Token.WITH:
               return transformWith((WithStatement)node);
           case Token.YIELD:
+          case Token.YIELD_STAR:
               return transformYield((Yield)node);
           default:
               if (node instanceof ExpressionStatement) {
@@ -1308,11 +1309,11 @@ public final class IRFactory extends Parser
     }
 
     private Node transformYield(Yield node) {
-        decompiler.addToken(Token.YIELD);
+        decompiler.addToken(node.getType());
         Node kid = node.getValue() == null ? null : transform(node.getValue());
         if (kid != null)
-            return new Node(Token.YIELD, kid, node.getLineno());
-        return new Node(Token.YIELD, node.getLineno());
+            return new Node(node.getType(), kid, node.getLineno());
+        return new Node(node.getType(), node.getLineno());
     }
 
     private Node transformXmlLiteral(XmlLiteral node) {
