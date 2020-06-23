@@ -54,6 +54,7 @@ public class MozillaSuiteTest {
     public MozillaSuiteTest(File jsFile, int optimizationLevel) {
         this.jsFile = jsFile;
         this.optimizationLevel = optimizationLevel;
+        ShellTest.cacheFramework();
     }
 
     public static File getTestDir() throws IOException {
@@ -181,8 +182,8 @@ public class MozillaSuiteTest {
         }
 
         @Override
-        public final void timedOut() {
-            failed("Timed out.");
+        public final void timedOut(long timeoutMillis) {
+            failed("Timed out (timeout = " + timeoutMillis + "(");
         }
     }
 
@@ -194,7 +195,7 @@ public class MozillaSuiteTest {
         shellContextFactory.setOptimizationLevel(optimizationLevel);
         ShellTestParameters params = new ShellTestParameters();
         JunitStatus status = new JunitStatus();
-        ShellTest.run(shellContextFactory, jsFile, params, status);
+        ShellTest.runNoFork(shellContextFactory, jsFile, params, status);
     }
 
 

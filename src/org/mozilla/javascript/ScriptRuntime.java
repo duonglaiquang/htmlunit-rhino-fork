@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -365,7 +366,7 @@ public class ScriptRuntime {
 
     public static Boolean wrapBoolean(boolean b)
     {
-        return b ? Boolean.TRUE : Boolean.FALSE;
+        return Boolean.valueOf(b);
     }
 
     public static Integer wrapInt(int i)
@@ -378,7 +379,7 @@ public class ScriptRuntime {
         if (Double.isNaN(x)) {
             return ScriptRuntime.NaNobj;
         }
-        return new Double(x);
+        return Double.valueOf(x);
     }
 
     /**
@@ -462,7 +463,10 @@ public class ScriptRuntime {
     // Preserve backward-compatibility with historical value of this.
     public static final double negativeZero = Double.longBitsToDouble(0x8000000000000000L);
 
-    public static final Double NaNobj = new Double(NaN);
+    public static final Double zeroObj = Double.valueOf(0.0);
+    public static final Double negativeZeroObj = Double.valueOf(-0.0);
+
+    public static final Double NaNobj = Double.valueOf(NaN);
 
     static double stringPrefixToNumber(String s, int start, int radix) {
         return stringToNumber(s, start, s.length() - 1, radix, true);
@@ -742,16 +746,11 @@ public class ScriptRuntime {
         if (count < args.length)
             return args;
 
-        int i;
         Object[] result = new Object[count];
-        for (i = 0; i < args.length; i++) {
-            result[i] = args[i];
+        System.arraycopy(args, 0, result, 0, args.length);
+        if (args.length < count) {
+            Arrays.fill(result, args.length, count, Undefined.instance);
         }
-
-        for (; i < count; i++) {
-            result[i] = Undefined.instance;
-        }
-
         return result;
     }
 
@@ -1171,7 +1170,7 @@ public class ScriptRuntime {
         Function function = (Function)fun;
         Scriptable thisObj = toObjectOrNull(cx, thisArg, scope);
         if (thisObj == null) {
-            throw undefCallError(thisObj, "function");
+            throw undefCallError(null, "function");
         }
         return function.call(cx, scope, thisObj, args);
     }
@@ -3063,7 +3062,7 @@ public class ScriptRuntime {
                 } while (target != null);
                 scopeChain = scopeChain.getParentScope();
             } while (scopeChain != null);
-            throw notFoundError(scopeChain, id);
+            throw notFoundError(null, id);
         }
         return doScriptableIncrDecr(target, id, scopeChain, value,
                                     incrDecrMask);
@@ -3111,7 +3110,7 @@ public class ScriptRuntime {
                                                Object value,
                                                int incrDecrMask)
     {
-        boolean post = ((incrDecrMask & Node.POST_FLAG) != 0);
+        final boolean post = (incrDecrMask & Node.POST_FLAG) != 0;
         double number;
         if (value instanceof Number) {
             number = ((Number)value).doubleValue();
@@ -3150,7 +3149,7 @@ public class ScriptRuntime {
                                       int incrDecrMask)
     {
         Object value = getObjectElem(obj, index, cx, scope);
-        boolean post = ((incrDecrMask & Node.POST_FLAG) != 0);
+        final boolean post = (incrDecrMask & Node.POST_FLAG) != 0;
         double number;
         if (value instanceof Number) {
             number = ((Number)value).doubleValue();
@@ -3353,10 +3352,10 @@ public class ScriptRuntime {
 
     public static boolean isNaN(Object n) {
         if (n instanceof Double) {
-            return Double.isNaN((Double)n);
+            return ((Double)n).isNaN();
         }
         if (n instanceof Float) {
-            return Float.isNaN((Float)n);
+            return ((Float)n).isNaN();
         }
         return false;
     }

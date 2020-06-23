@@ -581,9 +581,9 @@ public class NativeArray extends IdScriptableObject implements List
       ScriptableObject desc = new NativeObject();
       ScriptRuntime.setBuiltinProtoAndParent(desc, scope, TopLevel.Builtins.Object);
       desc.defineProperty("value", value, EMPTY);
-      desc.defineProperty("writable", true, EMPTY);
-      desc.defineProperty("enumerable", true, EMPTY);
-      desc.defineProperty("configurable", true, EMPTY);
+      desc.defineProperty("writable", Boolean.TRUE, EMPTY);
+      desc.defineProperty("enumerable", Boolean.TRUE, EMPTY);
+      desc.defineProperty("configurable", Boolean.TRUE, EMPTY);
       return desc;
     }
 
@@ -651,7 +651,7 @@ public class NativeArray extends IdScriptableObject implements List
         long len = ScriptRuntime.toUint32(arg0);
         if (len != ((Number)arg0).doubleValue()) {
             String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
-            throw ScriptRuntime.constructError("RangeError", msg);
+            throw ScriptRuntime.rangeError(msg);
         }
         return new NativeArray(len);
     }
@@ -790,7 +790,7 @@ public class NativeArray extends IdScriptableObject implements List
         long longVal = ScriptRuntime.toUint32(d);
         if (longVal != d) {
             String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
-            throw ScriptRuntime.constructError("RangeError", msg);
+            throw ScriptRuntime.rangeError(msg);
         }
 
         if (denseOnly) {
@@ -863,7 +863,7 @@ public class NativeArray extends IdScriptableObject implements List
         if (doubleLen > NativeNumber.MAX_SAFE_INTEGER) {
             if (throwIfTooLarge) {
                 String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
-                throw ScriptRuntime.constructError("RangeError", msg);
+                throw ScriptRuntime.rangeError(msg);
             }
             return (int) NativeNumber.MAX_SAFE_INTEGER;
         }
@@ -1571,7 +1571,7 @@ public class NativeArray extends IdScriptableObject implements List
         return result;
     }
 
-    private Scriptable js_slice(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+    private static Scriptable js_slice(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
         Scriptable o = ScriptRuntime.toObject(cx, scope, thisObj);
 

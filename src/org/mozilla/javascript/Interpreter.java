@@ -260,16 +260,16 @@ public final class Interpreter extends Icode implements Evaluator
             }
         }
 
-        private static boolean equals(CallFrame f1, CallFrame f2, EqualObjectGraphs equal) {
+        private static Boolean equals(CallFrame f1, CallFrame f2, EqualObjectGraphs equal) {
             // Iterative instead of recursive, as interpreter stack depth can
             // be larger than JVM stack depth.
             for(;;) {
                 if (f1 == f2) {
-                    return true;
+                    return Boolean.TRUE;
                 } else if (f1 == null || f2 == null) {
-                    return false;
+                    return Boolean.FALSE;
                 } else if (!f1.fieldsEqual(f2, equal)) {
-                    return false;
+                    return Boolean.FALSE;
                 } else {
                     f1 = f1.parentFrame;
                     f2 = f2.parentFrame;
@@ -3152,9 +3152,9 @@ switch (op) {
     private static boolean stack_boolean(CallFrame frame, int i)
     {
         Object x = frame.stack[i];
-        if (x == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(x)) {
             return true;
-        } else if (x == Boolean.FALSE) {
+        } else if (Boolean.FALSE.equals(x)) {
             return false;
         } else if (x == UniqueTag.DOUBLE_MARK) {
             double d = frame.sDbl[i];
@@ -3164,8 +3164,6 @@ switch (op) {
         } else if (x instanceof Number) {
             double d = ((Number)x).doubleValue();
             return (!Double.isNaN(d) && d != 0.0);
-        } else if (x instanceof Boolean) {
-            return ((Boolean)x).booleanValue();
         } else {
             return ScriptRuntime.toBoolean(x);
         }

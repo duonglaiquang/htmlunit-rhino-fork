@@ -24,10 +24,8 @@ import org.mozilla.javascript.Undefined;
 
 public final class OptRuntime extends ScriptRuntime
 {
-
-    public static final Double zeroObj = new Double(0.0);
-    public static final Double oneObj = new Double(1.0);
-    public static final Double minusOneObj = new Double(-1.0);
+    public static final Double oneObj = Double.valueOf(1.0);
+    public static final Double minusOneObj = Double.valueOf(-1.0);
 
     /**
      * Implement ....() call shrinking optimizer code.
@@ -300,10 +298,12 @@ public final class OptRuntime extends ScriptRuntime
         static final String CLASS_NAME =
             "org/mozilla/javascript/optimizer/OptRuntime$GeneratorState";
 
+        @SuppressWarnings("unused")
         public int resumptionPoint;
         static final String resumptionPoint_NAME = "resumptionPoint";
         static final String resumptionPoint_TYPE = "I";
 
+        @SuppressWarnings("unused")
         public Scriptable thisObj;
         static final String thisObj_NAME = "thisObj";
         static final String thisObj_TYPE =
