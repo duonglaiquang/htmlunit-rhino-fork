@@ -2908,12 +2908,21 @@ public abstract class ScriptableObject implements Scriptable,
             int attr = slot.getAttributes();
             if ((attr & READONLY) == 0)
                 throw Context.reportRuntimeError1("msg.var.redecl", name);
-            if ((attr & UNINITIALIZED_CONST) != 0) {
+
+            // HtmlUnit - HACK
+            // disable this to allow const updates in loops
+            // see JavaScriptEngine2Test.constInLoop()
+            //
+            // HtmlUnit - HACK
+            // if ((attr & UNINITIALIZED_CONST) != 0) {
+            // HtmlUnit - HACK
                 slot.value = value;
                 // clear the bit on const initialization
                 if (constFlag != UNINITIALIZED_CONST)
                     slot.setAttributes(attr & ~UNINITIALIZED_CONST);
-            }
+             // HtmlUnit - HACK
+             // }
+             // HtmlUnit - HACK
             return true;
         }
         return slot.setValue(value, this, start);

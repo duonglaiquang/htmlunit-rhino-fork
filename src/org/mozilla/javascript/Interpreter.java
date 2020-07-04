@@ -2527,13 +2527,22 @@ switch (op) {
                 throw Context.reportRuntimeError1("msg.var.redecl",
                                                   frame.idata.argNames[indexReg]);
             }
-            if ((varAttributes[indexReg] & ScriptableObject.UNINITIALIZED_CONST)
-                != 0)
-            {
+
+            // HtmlUnit - HACK
+            // disable this to allow const updates in loops
+            // see JavaScriptEngine2Test.constInLoop()
+            //
+            // HtmlUnit - HACK
+            // if ((varAttributes[indexReg] & ScriptableObject.UNINITIALIZED_CONST)
+            //    != 0)
+            // {
+            // HtmlUnit - HACK
                 vars[indexReg] = stack[stackTop];
                 varAttributes[indexReg] &= ~ScriptableObject.UNINITIALIZED_CONST;
                 varDbls[indexReg] = sDbl[stackTop];
-            }
+            // HtmlUnit - HACK
+            // }
+            // HtmlUnit - HACK
         } else {
             Object val = stack[stackTop];
             if (val == DOUBLE_MARK) val = ScriptRuntime.wrapNumber(sDbl[stackTop]);
