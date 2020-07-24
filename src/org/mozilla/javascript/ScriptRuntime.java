@@ -459,14 +459,13 @@ public class ScriptRuntime {
     }
 
     public static final double NaN = Double.NaN;
+    public static final Double NaNobj = Double.valueOf(NaN);
 
     // Preserve backward-compatibility with historical value of this.
     public static final double negativeZero = Double.longBitsToDouble(0x8000000000000000L);
 
     public static final Double zeroObj = Double.valueOf(0.0);
     public static final Double negativeZeroObj = Double.valueOf(-0.0);
-
-    public static final Double NaNobj = Double.valueOf(NaN);
 
     static double stringPrefixToNumber(String s, int start, int radix) {
         return stringToNumber(s, start, s.length() - 1, radix, true);
@@ -2379,7 +2378,7 @@ public class ScriptRuntime {
         Object r = f.call(cx, scope, enumObj.iterator, emptyArgs);
         Scriptable iteratorResult = toObject(cx, scope, r);
         Object done = ScriptableObject.getProperty(iteratorResult, ES6Iterator.DONE_PROPERTY);
-        if (done != ScriptableObject.NOT_FOUND && toBoolean(done)) {
+        if (done != Scriptable.NOT_FOUND && toBoolean(done)) {
             return Boolean.FALSE;
         }
         enumObj.currentId = ScriptableObject.getProperty(iteratorResult, ES6Iterator.VALUE_PROPERTY);

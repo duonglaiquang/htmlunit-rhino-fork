@@ -245,7 +245,7 @@ final class NativeString extends IdScriptableObject
                         Object arg = args[i];
                         int codePoint = ScriptRuntime.toInt32(arg);
                         double num = ScriptRuntime.toNumber(arg);
-                        if (!ScriptRuntime.eqNumber(num, codePoint) || !Character.isValidCodePoint(codePoint)) {
+                        if (!ScriptRuntime.eqNumber(num, Integer.valueOf(codePoint)) || !Character.isValidCodePoint(codePoint)) {
                             throw rangeError("Invalid code point " + ScriptRuntime.toString(arg));
                         }
                         codePoints[i] = codePoint;
@@ -540,11 +540,11 @@ final class NativeString extends IdScriptableObject
 
                     return (cnt < 0 || cnt >= str.length())
                         ? Undefined.instance
-                        : str.codePointAt((int) cnt);
+                        : Integer.valueOf(str.codePointAt((int) cnt));
                 }
 
               case SymbolId_iterator:
-                  return new NativeStringIterator(scope, thisObj);
+                  return new NativeStringIterator(scope, requireObjectCoercible(cx, thisObj, f));
 
             }
             throw new IllegalArgumentException("String.prototype has no method: " + f.getFunctionName());
@@ -679,11 +679,17 @@ final class NativeString extends IdScriptableObject
      * See ECMA 15.5.4.6.  Uses Java String.indexOf()
      * OPT to add - BMH searching from jsstr.c.
      */
-    private static int  js_indexOf(int methodId, String target, Object[] args) {
+    private static int js_indexOf(int methodId, String target, Object[] args) {
         String searchStr = ScriptRuntime.toString(args, 0);
         double position = ScriptRuntime.toInteger(args, 1);
 
-        if (position > target.length() && methodId != Id_startsWith && methodId != Id_endsWith) {
+        if (methodId != Id_startsWith && methodId != Id_endsWith
+                && searchStr.length() == 0) {
+            return position > target.length() ? target.length() : (int)position;
+        }
+
+        if (methodId != Id_startsWith && methodId != Id_endsWith
+                && position > target.length()) {
             return -1;
         }
 
