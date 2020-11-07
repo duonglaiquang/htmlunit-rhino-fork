@@ -150,6 +150,7 @@ public final class IRFactory extends Parser
           case Token.DO:
               return transformDoLoop((DoLoop)node);
           case Token.EMPTY:
+          case Token.COMMENT:
               return node;
           case Token.FOR:
               if (node instanceof ForInLoop) {
