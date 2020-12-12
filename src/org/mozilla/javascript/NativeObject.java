@@ -324,7 +324,7 @@ public class NativeObject extends IdScriptableObject implements Map
           case ConstructorId_setPrototypeOf:
               {
                 if (args.length < 2) {
-                  throw ScriptRuntime.typeError1("msg.incompat.call", "setPrototypeOf");
+                    throw ScriptRuntime.typeError3("msg.method.missing.parameter", "Object.setPrototypeOf", "2", Integer.toString(args.length));
                 }
                 Scriptable proto = (args[1] == null) ? null : ensureScriptable(args[1]);
                 if (proto instanceof Symbol) {
@@ -548,10 +548,13 @@ public class NativeObject extends IdScriptableObject implements Map
               }
           case ConstructorId_assign:
           {
-            if (args.length < 1) {
-              throw ScriptRuntime.typeError1("msg.incompat.call", "assign");
+            Scriptable targetObj;
+            if (args.length > 0) {
+              targetObj = ScriptRuntime.toObject(cx, thisObj, args[0]);
             }
-            Scriptable targetObj = ScriptRuntime.toObject(cx, thisObj, args[0]);
+            else {
+              targetObj = ScriptRuntime.toObject(cx, thisObj, Undefined.instance);
+            }
             for (int i = 1; i < args.length; i++) {
               if ((args[i] == null) || Undefined.isUndefined(args[i])) {
                 continue;

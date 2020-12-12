@@ -57,6 +57,31 @@ public class NativeObjectTest {
     }
 
     @Test
+    public void testAssignOneParameter() {
+        Object result = cx.evaluateString(
+                scope, "var obj = {};"
+                        + "res = Object.assign(obj);"
+                        + "res === obj;",
+                "test", 1, null
+        );
+
+        assertEquals(true, result);
+    }
+
+
+    @Test
+    public void testAssignMissingParameters() {
+        Object result = cx.evaluateString(
+                scope, "try { "
+                        + "  Object.assign();"
+                        + "} catch (e) { e.message }",
+                "test", 1, null
+        );
+
+        assertEquals("Cannot convert undefined to an object.", result);
+    }
+
+    @Test
     public void testAssignNumericPropertyGetter() {
         Object result = cx.evaluateString(
                 scope, "var obj = Object.defineProperty({}, 1, {\n"
@@ -99,5 +124,26 @@ public class NativeObjectTest {
         );
 
         assertEquals("Object.prototype.setPrototypeOf method called on null or undefined", result);
+    }
+
+    @Test
+    public void testSetPrototypeOfMissingParameters() {
+        Object result = cx.evaluateString(
+                scope, "try { "
+                        + "  Object.setPrototypeOf();"
+                        + "} catch (e) { e.message }",
+                "test", 1, null
+        );
+
+        assertEquals("Object.setPrototypeOf: At least 2 arguments required, but only 0 passed", result);
+
+        result = cx.evaluateString(
+                scope, "try { "
+                        + "  Object.setPrototypeOf({});"
+                        + "} catch (e) { e.message }",
+                "test", 1, null
+        );
+
+        assertEquals("Object.setPrototypeOf: At least 2 arguments required, but only 1 passed", result);
     }
 }
