@@ -14,18 +14,18 @@ import java.io.Serializable;
 /**
  * Base class for native object implementation that uses IdFunctionObject to
  * export its methods to script via &lt;class-name&gt;.prototype object.
- * 
+ *
  * Any descendant should implement at least the following methods:
  * findInstanceIdInfo getInstanceIdName execIdCall methodArity
- * 
+ *
  * To define non-function properties, the descendant should override
  * getInstanceIdValue setInstanceIdValue to get/set property value and provide
  * its default attributes.
- * 
- * 
+ *
+ *
  * To customize initialization of constructor and prototype objects, descendant
  * may override scopeInit or fillConstructorProperties methods.
- * 
+ *
  */
 public abstract class IdScriptableObject extends ScriptableObject implements IdFunctionCall {
     private static final long serialVersionUID = -3744239272168621609L;
@@ -881,30 +881,30 @@ public abstract class IdScriptableObject extends ScriptableObject implements IdF
     }
 
     /**
-     * Utility method to construct type error to indicate incompatible call
-     * when converting script thisObj to a particular type is not possible.
+     * Utility method to check the type and do the cast or throw an incompatible call
+     * error.
      * Possible usage would be to have a private function like realThis:
      * <pre>
-     *  private static NativeSomething realThis(Scriptable thisObj,
-     *                                          IdFunctionObject f)
+     *  private static NativeSomething realThis(Scriptable thisObj, IdFunctionObject f)
      *  {
-     *      if (!(thisObj instanceof NativeSomething))
-     *          throw incompatibleCallError(f);
-     *      return (NativeSomething)thisObj;
+     *      return ensureType(thisObj, NativeSomething.class, f);
      * }
      * </pre>
-     * Note that although such function can be implemented universally via
-     * java.lang.Class.isInstance(), it would be much more slower.
-     * @param f function that is attempting to convert 'this'
-     * object.
-     * @return Scriptable object suitable for a check by the instanceof
-     * operator.
-     * @throws RuntimeException if no more instanceof target can be found
+     * @param obj the object to check/cast
+     * @param clazz the target type
+     * @param f function that is attempting to convert 'this' object.
+     * @return obj casted to the target type
+     * @throws EcmaError if the cast failed.
      */
-    protected static EcmaError incompatibleCallError(IdFunctionObject f)
+    protected static <T> T ensureType(Object obj, Class<T> clazz, IdFunctionObject f)
     {
-        throw ScriptRuntime.typeError1("msg.incompat.call",
-                                       f.getFunctionName());
+        if (clazz.isInstance(obj)) {
+            return (T) obj;
+        }
+        if (obj == null) {
+            throw ScriptRuntime.typeError3("msg.incompat.call.details", f.getFunctionName(), "null", clazz.getName());
+        }
+        throw ScriptRuntime.typeError3("msg.incompat.call.details", f.getFunctionName(), obj.getClass().getName(), clazz.getName());
     }
 
     private IdFunctionObject newIdFunction(Object tag, int id, String name,
