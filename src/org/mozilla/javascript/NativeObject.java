@@ -308,7 +308,11 @@ public class NativeObject extends IdScriptableObject implements Map
                   }
                   if (gs != null) {
                       if (gs instanceof MemberBox) {
-                          gs = ((MemberBox) gs).asFunction(s.stringId, f.getParentScope(), f.getPrototype());
+                          if (isSetter) {
+                              gs = ((MemberBox) gs).asSetterFunction(s.stringId, this);
+                          } else {
+                              gs = ((MemberBox) gs).asGetterFunction(s.stringId, this);
+                          }
                       }
                       return gs;
                   }
@@ -546,6 +550,7 @@ public class NativeObject extends IdScriptableObject implements Map
 
                 return obj;
               }
+
           case ConstructorId_assign:
           {
             Scriptable targetObj;
@@ -871,7 +876,7 @@ public class NativeObject extends IdScriptableObject implements Map
         ConstructorId_defineProperty = -5,
         ConstructorId_isExtensible = -6,
         ConstructorId_preventExtensions = -7,
-        ConstructorId_defineProperties = -8,
+        ConstructorId_defineProperties= -8,
         ConstructorId_create = -9,
         ConstructorId_isSealed = -10,
         ConstructorId_isFrozen = -11,
