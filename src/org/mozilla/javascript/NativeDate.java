@@ -172,12 +172,12 @@ final class NativeDate extends IdScriptableObject
                 }
                 Object toISO = ScriptableObject.getProperty(o, toISOString);
                 if (toISO == NOT_FOUND) {
-                    throw ScriptRuntime.typeError2("msg.function.not.found.in",
+                    throw ScriptRuntime.typeErrorById("msg.function.not.found.in",
                             toISOString,
                             ScriptRuntime.toString(o));
                 }
                 if ( !(toISO instanceof Callable) ) {
-                    throw ScriptRuntime.typeError3("msg.isnt.function.in",
+                    throw ScriptRuntime.typeErrorById("msg.isnt.function.in",
                             toISOString,
                             ScriptRuntime.toString(o),
                             ScriptRuntime.toString(toISO));
@@ -185,7 +185,7 @@ final class NativeDate extends IdScriptableObject
                 Object result = ((Callable) toISO).call(cx, scope, o,
                             ScriptRuntime.emptyArgs);
                 if ( !ScriptRuntime.isPrimitive(result) ) {
-                    throw ScriptRuntime.typeError1("msg.toisostring.must.return.primitive",
+                    throw ScriptRuntime.typeErrorById("msg.toisostring.must.return.primitive",
                             ScriptRuntime.toString(result));
                 }
                 return result;
@@ -365,7 +365,7 @@ final class NativeDate extends IdScriptableObject
             if (!Double.isNaN(t)) {
                 return js_toISOString(t);
             }
-            String msg = ScriptRuntime.getMessage0("msg.invalid.date");
+            String msg = ScriptRuntime.getMessageById("msg.invalid.date");
             throw ScriptRuntime.rangeError(msg);
 
           default: throw new IllegalArgumentException(String.valueOf(id));

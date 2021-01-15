@@ -650,7 +650,7 @@ public class NativeArray extends IdScriptableObject implements List
         }
         long len = ScriptRuntime.toUint32(arg0);
         if (len != ((Number)arg0).doubleValue()) {
-            String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
+            String msg = ScriptRuntime.getMessageById("msg.arraylength.bad");
             throw ScriptRuntime.rangeError(msg);
         }
         return new NativeArray(len);
@@ -692,7 +692,7 @@ public class NativeArray extends IdScriptableObject implements List
 
         if (mapping) {
             if (!(mapArg instanceof Function)) {
-                throw ScriptRuntime.typeError0("msg.map.function.not");
+                throw ScriptRuntime.typeErrorById("msg.map.function.not");
             }
             mapFn = (Function)mapArg;
             if (args.length >= 3) {
@@ -789,7 +789,7 @@ public class NativeArray extends IdScriptableObject implements List
         double d = ScriptRuntime.toNumber(val);
         long longVal = ScriptRuntime.toUint32(d);
         if (longVal != d) {
-            String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
+            String msg = ScriptRuntime.getMessageById("msg.arraylength.bad");
             throw ScriptRuntime.rangeError(msg);
         }
 
@@ -862,7 +862,7 @@ public class NativeArray extends IdScriptableObject implements List
         double doubleLen = ScriptRuntime.toNumber(len);
         if (doubleLen > NativeNumber.MAX_SAFE_INTEGER) {
             if (throwIfTooLarge) {
-                String msg = ScriptRuntime.getMessage0("msg.arraylength.bad");
+                String msg = ScriptRuntime.getMessageById("msg.arraylength.bad");
                 throw ScriptRuntime.rangeError(msg);
             }
             return (int) NativeNumber.MAX_SAFE_INTEGER;
@@ -1045,7 +1045,7 @@ public class NativeArray extends IdScriptableObject implements List
         long llength = getLengthProperty(cx, o, false);
         int length = (int)llength;
         if (llength != length) {
-            throw Context.reportRuntimeError1(
+            throw Context.reportRuntimeErrorById(
                 "msg.arraylength.too.big", String.valueOf(llength));
         }
         // if no args, use "," as separator
@@ -1171,7 +1171,7 @@ public class NativeArray extends IdScriptableObject implements List
         long llength = getLengthProperty(cx, o, false);
         final int length = (int) llength;
         if (llength != length) {
-            throw Context.reportRuntimeError1(
+            throw Context.reportRuntimeErrorById(
                 "msg.arraylength.too.big", String.valueOf(llength));
         }
         // copy the JS array into a working array, so it can be
@@ -2033,7 +2033,7 @@ public class NativeArray extends IdScriptableObject implements List
         }
         if (value == Scriptable.NOT_FOUND) {
             // reproduce spidermonkey error message
-            throw ScriptRuntime.typeError0("msg.empty.array.reduce");
+            throw ScriptRuntime.typeErrorById("msg.empty.array.reduce");
         }
         return value;
     }

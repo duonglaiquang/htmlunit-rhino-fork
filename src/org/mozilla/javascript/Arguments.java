@@ -452,7 +452,7 @@ class Arguments extends IdScriptableObject
 
         @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-            throw ScriptRuntime.typeError1("msg.arguments.not.access.strict", propertyName);
+            throw ScriptRuntime.typeErrorById("msg.arguments.not.access.strict", propertyName);
         }
     }
 
