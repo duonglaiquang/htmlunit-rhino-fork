@@ -31,8 +31,6 @@ final class MemberBox implements Serializable
     private transient Member memberObject;
     transient Class<?>[] argTypes;
     transient boolean vararg;
-    transient Function asFunction;
-
 
     transient Function asGetterFunction;
     transient Function asSetterFunction;
@@ -213,7 +211,7 @@ final class MemberBox implements Serializable
 
     Object invoke(Object target, Object[] args)
     {
-       
+
         // handle delegators
         if (target instanceof Delegator) {
             target = ((Delegator) target).getDelegee();
@@ -223,7 +221,7 @@ final class MemberBox implements Serializable
                 args[i] = ((Delegator) args[i]).getDelegee();
             }
         }
-        
+
         Method method = method();
         try {
             try {
