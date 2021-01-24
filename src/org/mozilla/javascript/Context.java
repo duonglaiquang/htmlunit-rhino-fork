@@ -2546,7 +2546,7 @@ public class Context
         return cx;
     }
 
-    private Object compileImpl(Scriptable scope,
+    protected Object compileImpl(Scriptable scope,
                                String sourceString, String sourceName, int lineno,
                                Object securityDomain, boolean returnFunction,
                                Evaluator compiler,
