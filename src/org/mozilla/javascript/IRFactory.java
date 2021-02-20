@@ -422,8 +422,10 @@ public final class IRFactory extends Parser
     }
 
     private Node transformAssignment(Assignment node) {
+        AstNode right = node.getRight();
         AstNode left = removeParens(node.getLeft());
-        left = transformAssignmentLeft(node, left);
+        left = transformAssignmentLeft(node, left, right);
+
         Node target = null;
         if (isDestructuring(left)) {
             decompile(left);
@@ -431,25 +433,22 @@ public final class IRFactory extends Parser
         } else {
             target = transform(left);
         }
+
         decompiler.addToken(node.getType());
-        return createAssignment(node.getType(),
-                                target,
-                                transform(node.getRight()));
+        return createAssignment(node.getType(), target, transform(right));
     }
 
-    private AstNode transformAssignmentLeft(Assignment node, AstNode left) {
-        AstNode right = node.getRight();
-
+    private AstNode transformAssignmentLeft(Assignment node, AstNode left, AstNode right) {
         if (right.getType() == Token.NULL && node.getType() == Token.ASSIGN
                 && left instanceof Name && right instanceof KeywordLiteral) {
 
-            final String identifier = ((Name) left).getIdentifier();
+            String identifier = ((Name) left).getIdentifier();
             for (AstNode p = node.getParent(); p != null; p = p.getParent()) {
                 if (p instanceof FunctionNode) {
-                    final Name functionName = ((FunctionNode) p).getFunctionName();
+                    Name functionName = ((FunctionNode) p).getFunctionName();
                     if (functionName != null && functionName.getIdentifier().equals(identifier)) {
-                        final PropertyGet propertyGet = new PropertyGet();
-                        final KeywordLiteral thisKeyword = new KeywordLiteral();
+                        PropertyGet propertyGet = new PropertyGet();
+                        KeywordLiteral thisKeyword = new KeywordLiteral();
                         thisKeyword.setType(Token.THIS);
                         propertyGet.setLeft(thisKeyword);
                         propertyGet.setRight(left);
