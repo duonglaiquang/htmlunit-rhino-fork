@@ -776,6 +776,10 @@ public class Decompiler
                 result.append(" % ");
                 break;
 
+            case Token.EXP:
+                result.append(" ** ");
+                break;
+
             case Token.COLONCOLON:
                 result.append("::");
                 break;

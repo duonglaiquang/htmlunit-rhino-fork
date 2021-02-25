@@ -67,6 +67,7 @@ import org.mozilla.javascript.ast.Symbol;
 import org.mozilla.javascript.ast.ThrowStatement;
 import org.mozilla.javascript.ast.TryStatement;
 import org.mozilla.javascript.ast.UnaryExpression;
+import org.mozilla.javascript.ast.UpdateExpression;
 import org.mozilla.javascript.ast.VariableDeclaration;
 import org.mozilla.javascript.ast.VariableInitializer;
 import org.mozilla.javascript.ast.WhileLoop;
@@ -2590,7 +2591,7 @@ public class Parser
     private AstNode mulExpr()
         throws IOException
     {
-        AstNode pn = unaryExpr();
+        AstNode pn = expExpr();
         for (;;) {
             int tt = peekToken(), opPos = ts.tokenBeg;
             switch (tt) {
@@ -2598,7 +2599,28 @@ public class Parser
               case Token.DIV:
               case Token.MOD:
                 consumeToken();
-                pn = new InfixExpression(tt, pn, unaryExpr(), opPos);
+                pn = new InfixExpression(tt, pn, expExpr(), opPos);
+                continue;
+            }
+            break;
+        }
+        return pn;
+    }
+
+    private AstNode expExpr()
+        throws IOException
+    {
+        AstNode pn = unaryExpr();
+        for (;;) {
+            int tt = peekToken(), opPos = ts.tokenBeg;
+            switch (tt) {
+            case Token.EXP:
+                if (pn instanceof UnaryExpression) {
+                    reportError("msg.no.unary.expr.on.left.exp", AstNode.operatorToString(pn.getType()));
+                    return makeErrorNode();
+                }
+                consumeToken();
+                pn = new InfixExpression(tt, pn, expExpr(), opPos);
                 continue;
             }
             break;
@@ -2644,8 +2666,8 @@ public class Parser
           case Token.INC:
           case Token.DEC:
               consumeToken();
-              UnaryExpression expr = new UnaryExpression(tt, ts.tokenBeg,
-                                                         memberExpr(true));
+              UpdateExpression expr = new UpdateExpression(tt, ts.tokenBeg,
+                                                           memberExpr(true));
               expr.setLineno(line);
               checkBadIncDec(expr);
               return expr;
@@ -2676,8 +2698,8 @@ public class Parser
                   return pn;
               }
               consumeToken();
-              UnaryExpression uexpr =
-                      new UnaryExpression(tt, ts.tokenBeg, pn, true);
+              UpdateExpression uexpr =
+                      new UpdateExpression(tt, ts.tokenBeg, pn, true);
               uexpr.setLineno(line);
               checkBadIncDec(uexpr);
               return uexpr;
@@ -3872,7 +3894,7 @@ public class Parser
         }
     }
 
-    private void checkBadIncDec(UnaryExpression expr) {
+    private void checkBadIncDec(UpdateExpression expr) {
         AstNode op = removeParens(expr.getOperand());
         int tt = op.getType();
         if (!(tt == Token.NAME
