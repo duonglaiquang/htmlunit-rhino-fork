@@ -1543,11 +1543,13 @@ public class Parser
             if (matchToken(Token.IN, true)) {
                 isForIn = true;
                 inPos = ts.tokenBeg - forPos;
+                markDestructuring(init);
                 cond = expr();  // object over which we're iterating
             } else if (compilerEnv.getLanguageVersion() >= Context.VERSION_ES6 &&
                        matchToken(Token.NAME, true) && "of".equals(ts.getString())) {
                 isForOf = true;
                 inPos = ts.tokenBeg - forPos;
+                markDestructuring(init);
                 cond = expr();  // object over which we're iterating
             } else {  // ordinary for-loop
                 mustMatchToken(Token.SEMI, "msg.no.semi.for", true);
@@ -1637,7 +1639,6 @@ public class Parser
                 init = variables(tt, ts.tokenBeg, false);
             } else {
                 init = expr();
-                markDestructuring(init);
             }
             return init;
         } finally {
@@ -3732,12 +3733,12 @@ public class Parser
         int tt = peekToken();
         if ((tt == Token.COMMA || tt == Token.RC) && ptt == Token.NAME
                 && compilerEnv.getLanguageVersion() >= Context.VERSION_1_8) {
-            if (!inDestructuringAssignment) {
+            if (!inDestructuringAssignment && compilerEnv.getLanguageVersion() < Context.VERSION_ES6) {
                 reportError("msg.bad.object.init");
             }
             AstNode nn = new Name(property.getPosition(), property.getString());
             ObjectProperty pn = new ObjectProperty();
-            pn.putProp(Node.DESTRUCTURING_SHORTHAND, Boolean.TRUE);
+            pn.putProp(Node.SHORTHAND_PROPERTY_NAME, Boolean.TRUE);
             pn.setLeftAndRight(property, nn);
             return pn;
         }
