@@ -1420,7 +1420,7 @@ public class Context implements Closeable {
         return compileString(source, null, null, sourceName, lineno, securityDomain);
     }
 
-    protected final Script compileString(
+    protected Script compileString(
             String source,
             Evaluator compiler,
             ErrorReporter compilationErrorReporter,
@@ -1465,7 +1465,7 @@ public class Context implements Closeable {
         return compileFunction(scope, source, null, null, sourceName, lineno, securityDomain);
     }
 
-    protected final Function compileFunction(
+    protected Function compileFunction(
             Scriptable scope,
             String source,
             Evaluator compiler,
