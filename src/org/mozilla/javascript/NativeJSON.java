@@ -6,6 +6,7 @@
 
 package org.mozilla.javascript;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -208,7 +209,7 @@ public final class NativeJSON extends IdScriptableObject {
             this.propertyList = propertyList;
         }
 
-        Stack<Scriptable> stack = new Stack<Scriptable>();
+        Stack<Object> stack = new Stack<Object>();
         String indent;
         String gap;
         Callable replacer;
@@ -270,6 +271,8 @@ public final class NativeJSON extends IdScriptableObject {
 
     private static Object str(Object key, Scriptable holder, StringifyState state) {
         Object value = null;
+        Object unwrappedJavaValue = null;
+
         if (key instanceof String) {
             value = getProperty(holder, (String) key);
         } else {
@@ -294,25 +297,14 @@ public final class NativeJSON extends IdScriptableObject {
         } else if (value instanceof NativeBoolean) {
             value = ((NativeBoolean) value).getDefaultValue(ScriptRuntime.BooleanClass);
         } else if (value instanceof NativeJavaObject) {
-            value = ((NativeJavaObject) value).unwrap();
-            if (value instanceof Map) {
-                Map<?, ?> map = (Map<?, ?>) value;
-                NativeObject nObj = new NativeObject();
-                map.forEach(
-                        (k, v) -> {
-                            if (k instanceof CharSequence) {
-                                nObj.put(((CharSequence) k).toString(), nObj, v);
-                            }
-                        });
-                value = nObj;
+            unwrappedJavaValue = ((NativeJavaObject) value).unwrap();
+            if (!(unwrappedJavaValue instanceof Map
+                    || unwrappedJavaValue instanceof Collection
+                    || unwrappedJavaValue.getClass().isArray())) {
+                value = unwrappedJavaValue;
             } else {
-                if (value instanceof Collection<?>) {
-                    Collection<?> col = (Collection<?>) value;
-                    value = col.toArray(new Object[col.size()]);
-                }
-                if (value instanceof Object[]) {
-                    value = new NativeArray((Object[]) value);
-                }
+                // Don't unwrap Java objects to be processed by jo() or ja()
+                unwrappedJavaValue = null;
             }
         } else if (value instanceof XMLObject) {
             value = ((XMLObject) value).toString();
@@ -336,18 +328,16 @@ public final class NativeJSON extends IdScriptableObject {
             return "null";
         }
 
-        if (value instanceof Scriptable) {
-            if (!(value instanceof Callable)) {
-                if (value instanceof NativeArray) {
-                    return ja((NativeArray) value, state);
-                }
-                return jo((Scriptable) value, state);
-            }
-        } else if (!Undefined.isUndefined(value)) {
-            throw ScriptRuntime.typeErrorById(
-                    "msg.json.cant.serialize", value.getClass().getName());
+        if (unwrappedJavaValue != null) {
+            return javaToJSON(value, state);
         }
 
+        if ((value instanceof Scriptable) && !(value instanceof Callable)) {
+            if (isObjectArrayLike(value)) {
+                return ja((Scriptable) value, state);
+            }
+            return jo((Scriptable) value, state);
+        }
         return Undefined.instance;
     }
 
@@ -365,10 +355,44 @@ public final class NativeJSON extends IdScriptableObject {
     }
 
     private static String jo(Scriptable value, StringifyState state) {
-        if (state.stack.search(value) != -1) {
-            throw ScriptRuntime.typeErrorById("msg.cyclic.value");
+        Object trackValue = value, unwrapped = null;
+        if (value instanceof Wrapper) {
+            trackValue = unwrapped = ((Wrapper) value).unwrap();
         }
-        state.stack.push(value);
+
+        if (state.stack.search(trackValue) != -1) {
+            throw ScriptRuntime.typeErrorById("msg.cyclic.value", trackValue.getClass().getName());
+        }
+        state.stack.push(trackValue);
+
+        if (unwrapped instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) unwrapped;
+            Scriptable nObj = state.cx.newObject(state.scope);
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof Symbol) continue;
+                Object wrappedValue = Context.javaToJS(entry.getValue(), state.scope, state.cx);
+                int attributes;
+                String key;
+                if (entry.getKey() instanceof String) {
+                    // Keys that are actually Strings are permanent and will not be
+                    // overridden by other objects having the same toString value.
+                    key = (String) entry.getKey();
+                    attributes = ScriptableObject.READONLY | ScriptableObject.PERMANENT;
+                } else {
+                    // To avoid duplicate keys in JSON, replace previous key having the same
+                    // toString value as the current object.
+                    key = entry.getKey().toString();
+                    attributes = ScriptableObject.EMPTY;
+                }
+                try {
+                    ScriptableObject.defineProperty(nObj, key, wrappedValue, attributes);
+                } catch (EcmaError error) {
+                    // ignore TypeErrors if we tried to rewrite the property for a
+                    // String key.
+                }
+            }
+            value = nObj;
+        }
 
         String stepback = state.indent;
         state.indent = state.indent + state.gap;
@@ -412,17 +436,43 @@ public final class NativeJSON extends IdScriptableObject {
         return finalValue;
     }
 
-    private static String ja(NativeArray value, StringifyState state) {
-        if (state.stack.search(value) != -1) {
-            throw ScriptRuntime.typeErrorById("msg.cyclic.value");
+    private static String ja(Scriptable value, StringifyState state) {
+        Object trackValue = value, unwrapped = null;
+        if (value instanceof Wrapper) {
+            trackValue = unwrapped = ((Wrapper) value).unwrap();
         }
-        state.stack.push(value);
+        if (state.stack.search(trackValue) != -1) {
+            throw ScriptRuntime.typeErrorById("msg.cyclic.value", trackValue.getClass().getName());
+        }
+        state.stack.push(trackValue);
 
         String stepback = state.indent;
         state.indent = state.indent + state.gap;
         List<Object> partial = new LinkedList<Object>();
 
-        long len = value.getLength();
+        if (unwrapped != null) {
+            Object[] elements = null;
+            if (unwrapped.getClass().isArray()) {
+                int length = Array.getLength(unwrapped);
+                elements = new Object[length];
+                for (int i = 0; i < length; i++) {
+                    elements[i] = Context.javaToJS(Array.get(unwrapped, i), state.scope, state.cx);
+                }
+            } else if (unwrapped instanceof Collection) {
+                Collection<?> collection = (Collection<?>) unwrapped;
+                elements = new Object[collection.size()];
+                int i = 0;
+                for (Object o : collection) {
+                    elements[i++] = Context.javaToJS(o, state.scope, state.cx);
+                }
+            }
+            if (elements != null) {
+                value = state.cx.newArray(state.scope, elements);
+            }
+        }
+
+        long len = ((NativeArray) value).getLength();
+
         for (long index = 0; index < len; index++) {
             Object strP;
             if (index > Integer.MAX_VALUE) {
@@ -498,6 +548,28 @@ public final class NativeJSON extends IdScriptableObject {
         }
         product.append('"');
         return product.toString();
+    }
+
+    private static Object javaToJSON(Object value, StringifyState state) {
+        value = state.cx.getJavaToJSONConverter().apply(value);
+        value = Context.javaToJS(value, state.scope, state.cx);
+
+        ScriptableObject wrapper = new NativeObject();
+        wrapper.setParentScope(state.scope);
+        wrapper.setPrototype(ScriptableObject.getObjectPrototype(state.scope));
+        wrapper.defineProperty("", value, 0);
+        return str("", wrapper, state);
+    }
+
+    private static boolean isObjectArrayLike(Object o) {
+        if (o instanceof NativeArray) {
+            return true;
+        }
+        if (o instanceof NativeJavaObject) {
+            Object unwrapped = ((NativeJavaObject) o).unwrap();
+            return (unwrapped instanceof Collection) || (unwrapped.getClass().isArray());
+        }
+        return false;
     }
 
     // #string_id_map#
