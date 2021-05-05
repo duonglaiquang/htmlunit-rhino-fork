@@ -317,64 +317,64 @@ public class Context implements Closeable {
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Whether the "someFunc.arguments" is a read-only view of the function argument
-     * or the real arguments.
+     * <p>Whether the "someFunc.arguments" is a read-only view of the function argument or the real
+     * arguments.
      *
-     * By default {@link #hasFeature(int)} returns false.
+     * <p>By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW = 101;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that 'exception' (technically NativeError) always exposes "stack" property.
+     * <p>Indicates that 'exception' (technically NativeError) always exposes "stack" property.
      *
-     * By default {@link #hasFeature(int)} returns true.
+     * <p>By default {@link #hasFeature(int)} returns true.
      */
     public static final int FEATURE_HTMLUNIT_ERROR_STACK = 102;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that function is defined even before its declaration, inside a block.
+     * <p>Indicates that function is defined even before its declaration, inside a block.
      *
-     * By default {@link #hasFeature(int)} returns false.
+     * <p>By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK = 103;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that for(x in []) should enumerate the numbers first.
+     * <p>Indicates that for(x in []) should enumerate the numbers first.
      *
-     * By default {@link #hasFeature(int)} returns false.
+     * <p>By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 104;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that {@code MemberBox.toString()} contains property name.
+     * <p>Indicates that {@code MemberBox.toString()} contains property name.
      *
-     * By default {@link #hasFeature(int)} returns true.
+     * <p>By default {@link #hasFeature(int)} returns true.
      */
     public static final int FEATURE_HTMLUNIT_MEMBERBOX_NAME = 105;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that {@code MemberBox.toString()} starts with new line.
+     * <p>Indicates that {@code MemberBox.toString()} starts with new line.
      *
-     * By default {@link #hasFeature(int)} returns true.
+     * <p>By default {@link #hasFeature(int)} returns true.
      */
     public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 106;
 
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * Indicates that {@code Array} supports constructor properties.
+     * <p>Indicates that {@code Array} supports constructor properties.
      *
-     * By default {@link #hasFeature(int)} returns false.
+     * <p>By default {@link #hasFeature(int)} returns false.
      */
     public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 107;
 
