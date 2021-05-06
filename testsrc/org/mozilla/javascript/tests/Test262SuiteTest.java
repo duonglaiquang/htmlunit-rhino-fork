@@ -62,7 +62,6 @@ public class Test262SuiteTest {
             new HashSet<>(
                     Arrays.asList(
                             "Atomics",
-                            "BigInt",
                             "IsHTMLDDA",
                             "Promise.prototype.finally",
                             "Proxy",
@@ -87,7 +86,10 @@ public class Test262SuiteTest {
                             "regexp-named-groups",
                             "regexp-unicode-property-escapes",
                             "super",
+                            "String.prototype.matchAll",
+                            "Symbol.matchAll",
                             "tail-call-optimization",
+                            "json-superset",
                             "u180e"));
 
     static {
@@ -196,13 +198,15 @@ public class Test262SuiteTest {
             }
 
             String str = testCase.source;
+            int line = 1;
             if (useStrict) {
                 str = "\"use strict\";\n" + str;
+                line--;
             }
 
             boolean failedEarly = true;
             try {
-                Script caseScript = cx.compileString(str, testFilePath, 0, null);
+                Script caseScript = cx.compileString(str, testFilePath, line, null);
 
                 failedEarly = false; // not after this line
                 caseScript.exec(cx, scope);

@@ -7,11 +7,12 @@
 package org.mozilla.javascript;
 
 import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import org.mozilla.javascript.json.JsonParser;
@@ -199,7 +200,7 @@ public final class NativeJSON extends IdScriptableObject {
                 String indent,
                 String gap,
                 Callable replacer,
-                List<Object> propertyList) {
+                Object[] propertyList) {
             this.cx = cx;
             this.scope = scope;
 
@@ -213,7 +214,7 @@ public final class NativeJSON extends IdScriptableObject {
         String indent;
         String gap;
         Callable replacer;
-        List<Object> propertyList;
+        Object[] propertyList;
 
         Context cx;
         Scriptable scope;
@@ -224,21 +225,35 @@ public final class NativeJSON extends IdScriptableObject {
         String indent = "";
         String gap = "";
 
-        List<Object> propertyList = null;
+        Object[] propertyList = null;
         Callable replacerFunction = null;
 
         if (replacer instanceof Callable) {
             replacerFunction = (Callable) replacer;
         } else if (replacer instanceof NativeArray) {
-            propertyList = new LinkedList<Object>();
+            LinkedHashSet<Object> propertySet = new LinkedHashSet<Object>();
             NativeArray replacerArray = (NativeArray) replacer;
             for (int i : replacerArray.getIndexIds()) {
                 Object v = replacerArray.get(i, replacerArray);
-                if (v instanceof String || v instanceof Number) {
-                    propertyList.add(v);
-                } else if (v instanceof NativeString || v instanceof NativeNumber) {
-                    propertyList.add(ScriptRuntime.toString(v));
+                if (v instanceof String) {
+                    propertySet.add(v);
+                } else if (v instanceof Number
+                        || v instanceof NativeString
+                        || v instanceof NativeNumber) {
+                    // TODO: This should also apply to subclasses of NativeString and NativeNumber
+                    // once the class, extends, and super keywords are implemented
+                    propertySet.add(ScriptRuntime.toString(v));
                 }
+            }
+            // After items have been converted to strings and duplicates removed, transform to an
+            // array and convert indexed keys back to Integers as required for later processing
+            propertyList = new Object[propertySet.size()];
+            int i = 0;
+            for (Object prop : propertySet) {
+                ScriptRuntime.StringIdOrIndex idOrIndex = ScriptRuntime.toStringIdOrIndex(cx, prop);
+                // This will always be a String or Integer
+                propertyList[i++] =
+                        (idOrIndex.stringId == null) ? idOrIndex.index : idOrIndex.stringId;
             }
         }
 
@@ -284,6 +299,14 @@ public final class NativeJSON extends IdScriptableObject {
             if (toJSON instanceof Callable) {
                 value = callMethod(state.cx, (Scriptable) value, "toJSON", new Object[] {key});
             }
+        } else if (value instanceof BigInteger) {
+            Scriptable bigInt = ScriptRuntime.toObject(state.cx, state.scope, value);
+            if (hasProperty(bigInt, "toJSON")) {
+                Object toJSON = getProperty(bigInt, "toJSON");
+                if (toJSON instanceof Callable) {
+                    value = callMethod(state.cx, bigInt, "toJSON", new Object[] {key});
+                }
+            }
         }
 
         if (state.replacer != null) {
@@ -296,6 +319,9 @@ public final class NativeJSON extends IdScriptableObject {
             value = ScriptRuntime.toString(value);
         } else if (value instanceof NativeBoolean) {
             value = ((NativeBoolean) value).getDefaultValue(ScriptRuntime.BooleanClass);
+        } else if (state.cx.getLanguageVersion() >= Context.VERSION_ES6
+                && value instanceof NativeBigInt) {
+            value = ((NativeBigInt) value).getDefaultValue(ScriptRuntime.BigIntegerClass);
         } else if (value instanceof NativeJavaObject) {
             unwrappedJavaValue = ((NativeJavaObject) value).unwrap();
             if (!(unwrappedJavaValue instanceof Map
@@ -319,6 +345,9 @@ public final class NativeJSON extends IdScriptableObject {
         }
 
         if (value instanceof Number) {
+            if (value instanceof BigInteger) {
+                throw ScriptRuntime.typeErrorById("msg.json.cant.serialize", "BigInt");
+            }
             double d = ((Number) value).doubleValue();
             if (!Double.isNaN(d)
                     && d != Double.POSITIVE_INFINITY
@@ -398,12 +427,12 @@ public final class NativeJSON extends IdScriptableObject {
         state.indent = state.indent + state.gap;
         Object[] k = null;
         if (state.propertyList != null) {
-            k = state.propertyList.toArray();
+            k = state.propertyList;
         } else {
             k = value.getIds();
         }
 
-        List<Object> partial = new LinkedList<Object>();
+        Collection<Object> partial = new LinkedList<Object>();
 
         for (Object p : k) {
             Object strP = str(p, value, state);
@@ -448,7 +477,7 @@ public final class NativeJSON extends IdScriptableObject {
 
         String stepback = state.indent;
         state.indent = state.indent + state.gap;
-        List<Object> partial = new LinkedList<Object>();
+        Collection<Object> partial = new LinkedList<Object>();
 
         if (unwrapped != null) {
             Object[] elements = null;

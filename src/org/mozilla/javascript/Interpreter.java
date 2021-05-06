@@ -10,6 +10,7 @@ import static org.mozilla.javascript.UniqueTag.DOUBLE_MARK;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -484,6 +485,7 @@ public final class Interpreter extends Icode implements Evaluator {
         byte iCode[] = idata.itsICode;
         int iCodeLength = iCode.length;
         String[] strings = idata.itsStringTable;
+        BigInteger[] bigInts = idata.itsBigIntTable;
         PrintStream out = System.out;
         out.println("ICode dump, for " + idata.itsName + ", length = " + iCodeLength);
         out.println("MaxStack = " + idata.itsMaxStack);
@@ -674,6 +676,34 @@ public final class Interpreter extends Icode implements Evaluator {
                     out.println(tname + " " + indexReg);
                     ++pc;
                     break;
+                    // TODO: Icode_REG_STR_C0-3 is not dump. I made this the same it.
+                case Icode_REG_BIGINT_C0:
+                case Icode_REG_BIGINT_C1:
+                case Icode_REG_BIGINT_C2:
+                case Icode_REG_BIGINT_C3:
+                    Kit.codeBug();
+                    break;
+                case Icode_REG_BIGINT1:
+                    {
+                        BigInteger bigInt = bigInts[0xFF & iCode[pc]];
+                        out.println(tname + " " + bigInt.toString() + 'n');
+                        ++pc;
+                        break;
+                    }
+                case Icode_REG_BIGINT2:
+                    {
+                        BigInteger bigInt = bigInts[getIndex(iCode, pc)];
+                        out.println(tname + " " + bigInt.toString() + 'n');
+                        pc += 2;
+                        break;
+                    }
+                case Icode_REG_BIGINT4:
+                    {
+                        BigInteger bigInt = bigInts[getInt(iCode, pc)];
+                        out.println(tname + " " + bigInt.toString() + 'n');
+                        pc += 4;
+                        break;
+                    }
             }
             if (old_pc + icodeLength != pc) Kit.codeBug();
         }
@@ -1093,6 +1123,7 @@ public final class Interpreter extends Icode implements Evaluator {
         final int EXCEPTION_COST = 100;
 
         String stringReg = null;
+        BigInteger bigIntReg = null;
         int indexReg = -1;
 
         if (cx.lastInterpreterFrame != null) {
@@ -1153,6 +1184,7 @@ public final class Interpreter extends Icode implements Evaluator {
                 int[] varAttributes = frame.varSource.stackAttributes;
                 byte[] iCode = frame.idata.itsICode;
                 String[] strings = frame.idata.itsStringTable;
+                BigInteger[] bigInts = frame.idata.itsBigIntTable;
 
                 // Use local for stackTop as well. Since execption handlers
                 // can only exist at statement level where stack is empty,
@@ -1413,9 +1445,7 @@ public final class Interpreter extends Icode implements Evaluator {
                                 break Loop;
                             case Token.BITNOT:
                                 {
-                                    int rIntValue = stack_int32(frame, stackTop);
-                                    stack[stackTop] = DBL_MRK;
-                                    sDbl[stackTop] = ~rIntValue;
+                                    stackTop = doBitNOT(frame, stack, sDbl, stackTop);
                                     continue Loop;
                                 }
                             case Token.BITAND:
@@ -1435,15 +1465,23 @@ public final class Interpreter extends Icode implements Evaluator {
                                     sDbl[stackTop] = ScriptRuntime.toUint32(lDbl) >>> rIntValue;
                                     continue Loop;
                                 }
-                            case Token.NEG:
                             case Token.POS:
                                 {
                                     double rDbl = stack_double(frame, stackTop);
                                     stack[stackTop] = DBL_MRK;
-                                    if (op == Token.NEG) {
-                                        rDbl = -rDbl;
-                                    }
                                     sDbl[stackTop] = rDbl;
+                                    continue Loop;
+                                }
+                            case Token.NEG:
+                                {
+                                    Number rNum = stack_numeric(frame, stackTop);
+                                    Number rNegNum = ScriptRuntime.negate(rNum);
+                                    if (rNegNum instanceof BigInteger) {
+                                        stack[stackTop] = rNegNum;
+                                    } else {
+                                        stack[stackTop] = DBL_MRK;
+                                        sDbl[stackTop] = rNegNum.doubleValue();
+                                    }
                                     continue Loop;
                                 }
                             case Token.ADD:
@@ -1932,6 +1970,9 @@ public final class Interpreter extends Icode implements Evaluator {
                                 stack[stackTop] = DBL_MRK;
                                 sDbl[stackTop] = frame.idata.itsDoubleTable[indexReg];
                                 continue Loop;
+                            case Token.BIGINT:
+                                stack[++stackTop] = bigIntReg;
+                                continue Loop;
                             case Token.NAME:
                                 stack[++stackTop] = ScriptRuntime.name(cx, frame.scope, stringReg);
                                 continue Loop;
@@ -2341,6 +2382,30 @@ public final class Interpreter extends Icode implements Evaluator {
                                 stringReg = strings[getInt(iCode, frame.pc)];
                                 frame.pc += 4;
                                 continue Loop;
+                            case Icode_REG_BIGINT_C0:
+                                bigIntReg = bigInts[0];
+                                continue Loop;
+                            case Icode_REG_BIGINT_C1:
+                                bigIntReg = bigInts[1];
+                                continue Loop;
+                            case Icode_REG_BIGINT_C2:
+                                bigIntReg = bigInts[2];
+                                continue Loop;
+                            case Icode_REG_BIGINT_C3:
+                                bigIntReg = bigInts[3];
+                                continue Loop;
+                            case Icode_REG_BIGINT1:
+                                bigIntReg = bigInts[0xFF & iCode[frame.pc]];
+                                ++frame.pc;
+                                continue Loop;
+                            case Icode_REG_BIGINT2:
+                                bigIntReg = bigInts[getIndex(iCode, frame.pc)];
+                                frame.pc += 2;
+                                continue Loop;
+                            case Icode_REG_BIGINT4:
+                                bigIntReg = bigInts[getInt(iCode, frame.pc)];
+                                frame.pc += 4;
+                                continue Loop;
                             default:
                                 dumpICode(frame.idata);
                                 throw new RuntimeException(
@@ -2564,49 +2629,20 @@ public final class Interpreter extends Icode implements Evaluator {
         {
             number_compare:
             {
-                double rDbl, lDbl;
+                Number rNum, lNum;
                 if (rhs == DOUBLE_MARK) {
-                    rDbl = sDbl[stackTop + 1];
-                    lDbl = stack_double(frame, stackTop);
+                    rNum = sDbl[stackTop + 1];
+                    lNum = stack_numeric(frame, stackTop);
                 } else if (lhs == DOUBLE_MARK) {
-                    rDbl = ScriptRuntime.toNumber(rhs);
-                    lDbl = sDbl[stackTop];
+                    rNum = ScriptRuntime.toNumeric(rhs);
+                    lNum = sDbl[stackTop];
                 } else {
                     break number_compare;
                 }
-                switch (op) {
-                    case Token.GE:
-                        valBln = (lDbl >= rDbl);
-                        break object_compare;
-                    case Token.LE:
-                        valBln = (lDbl <= rDbl);
-                        break object_compare;
-                    case Token.GT:
-                        valBln = (lDbl > rDbl);
-                        break object_compare;
-                    case Token.LT:
-                        valBln = (lDbl < rDbl);
-                        break object_compare;
-                    default:
-                        throw Kit.codeBug();
-                }
+                valBln = ScriptRuntime.compare(lNum, rNum, op);
+                break object_compare;
             }
-            switch (op) {
-                case Token.GE:
-                    valBln = ScriptRuntime.cmp_LE(rhs, lhs);
-                    break;
-                case Token.LE:
-                    valBln = ScriptRuntime.cmp_LE(lhs, rhs);
-                    break;
-                case Token.GT:
-                    valBln = ScriptRuntime.cmp_LT(rhs, lhs);
-                    break;
-                case Token.LT:
-                    valBln = ScriptRuntime.cmp_LT(lhs, rhs);
-                    break;
-                default:
-                    throw Kit.codeBug();
-            }
+            valBln = ScriptRuntime.compare(lhs, rhs, op);
         }
         stack[stackTop] = ScriptRuntime.wrapBoolean(valBln);
         return stackTop;
@@ -2614,27 +2650,47 @@ public final class Interpreter extends Icode implements Evaluator {
 
     private static int doBitOp(
             CallFrame frame, int op, Object[] stack, double[] sDbl, int stackTop) {
-        int lIntValue = stack_int32(frame, stackTop - 1);
-        int rIntValue = stack_int32(frame, stackTop);
-        stack[--stackTop] = DOUBLE_MARK;
+        Number lValue = stack_numeric(frame, stackTop - 1);
+        Number rValue = stack_numeric(frame, stackTop);
+        stackTop--;
+
+        Number result = null;
         switch (op) {
             case Token.BITAND:
-                lIntValue &= rIntValue;
+                result = ScriptRuntime.bitwiseAND(lValue, rValue);
                 break;
             case Token.BITOR:
-                lIntValue |= rIntValue;
+                result = ScriptRuntime.bitwiseOR(lValue, rValue);
                 break;
             case Token.BITXOR:
-                lIntValue ^= rIntValue;
+                result = ScriptRuntime.bitwiseXOR(lValue, rValue);
                 break;
             case Token.LSH:
-                lIntValue <<= rIntValue;
+                result = ScriptRuntime.leftShift(lValue, rValue);
                 break;
             case Token.RSH:
-                lIntValue >>= rIntValue;
+                result = ScriptRuntime.signedRightShift(lValue, rValue);
                 break;
         }
-        sDbl[stackTop] = lIntValue;
+
+        if (result instanceof BigInteger) {
+            stack[stackTop] = result;
+        } else {
+            stack[stackTop] = DOUBLE_MARK;
+            sDbl[stackTop] = result.doubleValue();
+        }
+        return stackTop;
+    }
+
+    private static int doBitNOT(CallFrame frame, Object[] stack, double[] sDbl, int stackTop) {
+        Number value = stack_numeric(frame, stackTop);
+        Number result = ScriptRuntime.bitwiseNOT(value);
+        if (result instanceof BigInteger) {
+            stack[stackTop] = result;
+        } else {
+            stack[stackTop] = DOUBLE_MARK;
+            sDbl[stackTop] = result.doubleValue();
+        }
         return stackTop;
     }
 
@@ -2854,27 +2910,56 @@ public final class Interpreter extends Icode implements Evaluator {
         int incrDecrMask = frame.idata.itsICode[frame.pc];
         if (!frame.useActivation) {
             Object varValue = vars[indexReg];
-            double d;
+            double d = 0.0;
+            BigInteger bi = null;
             if (varValue == DOUBLE_MARK) {
                 d = varDbls[indexReg];
             } else {
-                d = ScriptRuntime.toNumber(varValue);
-            }
-            double d2 = ((incrDecrMask & Node.DECR_FLAG) == 0) ? d + 1.0 : d - 1.0;
-            boolean post = ((incrDecrMask & Node.POST_FLAG) != 0);
-            if ((varAttributes[indexReg] & ScriptableObject.READONLY) == 0) {
-                if (varValue != DOUBLE_MARK) {
-                    vars[indexReg] = DOUBLE_MARK;
-                }
-                varDbls[indexReg] = d2;
-                stack[stackTop] = DOUBLE_MARK;
-                sDbl[stackTop] = post ? d : d2;
-            } else {
-                if (post && varValue != DOUBLE_MARK) {
-                    stack[stackTop] = varValue;
+                Number num = ScriptRuntime.toNumeric(varValue);
+                if (num instanceof BigInteger) {
+                    bi = (BigInteger) num;
                 } else {
+                    d = num.doubleValue();
+                }
+            }
+            if (bi == null) {
+                // double
+                double d2 = ((incrDecrMask & Node.DECR_FLAG) == 0) ? d + 1.0 : d - 1.0;
+                boolean post = ((incrDecrMask & Node.POST_FLAG) != 0);
+                if ((varAttributes[indexReg] & ScriptableObject.READONLY) == 0) {
+                    if (varValue != DOUBLE_MARK) {
+                        vars[indexReg] = DOUBLE_MARK;
+                    }
+                    varDbls[indexReg] = d2;
                     stack[stackTop] = DOUBLE_MARK;
                     sDbl[stackTop] = post ? d : d2;
+                } else {
+                    if (post && varValue != DOUBLE_MARK) {
+                        stack[stackTop] = varValue;
+                    } else {
+                        stack[stackTop] = DOUBLE_MARK;
+                        sDbl[stackTop] = post ? d : d2;
+                    }
+                }
+            } else {
+                // BigInt
+                BigInteger result;
+                if ((incrDecrMask & Node.DECR_FLAG) == 0) {
+                    result = bi.add(BigInteger.ONE);
+                } else {
+                    result = bi.subtract(BigInteger.ONE);
+                }
+
+                boolean post = ((incrDecrMask & Node.POST_FLAG) != 0);
+                if ((varAttributes[indexReg] & ScriptableObject.READONLY) == 0) {
+                    vars[indexReg] = result;
+                    stack[stackTop] = post ? bi : result;
+                } else {
+                    if (post && varValue != DOUBLE_MARK) {
+                        stack[stackTop] = varValue;
+                    } else {
+                        stack[stackTop] = post ? bi : result;
+                    }
                 }
             }
         } else {
@@ -2993,14 +3078,14 @@ public final class Interpreter extends Icode implements Evaluator {
             rdbl = sDbl[stackTop + 1];
             if (lhs == DBL_MRK) {
                 ldbl = sDbl[stackTop];
-            } else if (lhs instanceof Number) {
+            } else if (lhs instanceof Number && !(lhs instanceof BigInteger)) {
                 ldbl = ((Number) lhs).doubleValue();
             } else {
                 return false;
             }
         } else if (lhs == DBL_MRK) {
             ldbl = sDbl[stackTop];
-            if (rhs instanceof Number) {
+            if (rhs instanceof Number && !(rhs instanceof BigInteger)) {
                 rdbl = ((Number) rhs).doubleValue();
             } else {
                 return false;
@@ -3420,6 +3505,14 @@ public final class Interpreter extends Icode implements Evaluator {
         return frame.sDbl[i];
     }
 
+    private static Number stack_numeric(CallFrame frame, int i) {
+        Object x = frame.stack[i];
+        if (x != UniqueTag.DOUBLE_MARK) {
+            return ScriptRuntime.toNumeric(x);
+        }
+        return frame.sDbl[i];
+    }
+
     private static boolean stack_boolean(CallFrame frame, int i) {
         Object x = frame.stack[i];
         if (Boolean.TRUE.equals(x)) {
@@ -3431,6 +3524,8 @@ public final class Interpreter extends Icode implements Evaluator {
             return !Double.isNaN(d) && d != 0.0;
         } else if (x == null || x == Undefined.instance) {
             return false;
+        } else if (x instanceof BigInteger) {
+            return !((BigInteger) x).equals(BigInteger.ZERO);
         } else if (x instanceof Number) {
             double d = ((Number) x).doubleValue();
             return (!Double.isNaN(d) && d != 0.0);
@@ -3475,16 +3570,17 @@ public final class Interpreter extends Icode implements Evaluator {
                         new ConsString(ScriptRuntime.toCharSequence(lhs), (CharSequence) rhs);
 
             } else {
-                double lDbl =
-                        (lhs instanceof Number)
-                                ? ((Number) lhs).doubleValue()
-                                : ScriptRuntime.toNumber(lhs);
-                double rDbl =
-                        (rhs instanceof Number)
-                                ? ((Number) rhs).doubleValue()
-                                : ScriptRuntime.toNumber(rhs);
-                stack[stackTop] = DOUBLE_MARK;
-                sDbl[stackTop] = lDbl + rDbl;
+                Number lNum = (lhs instanceof Number) ? (Number) lhs : ScriptRuntime.toNumeric(lhs);
+                Number rNum = (rhs instanceof Number) ? (Number) rhs : ScriptRuntime.toNumeric(rhs);
+
+                if (lNum instanceof BigInteger && rNum instanceof BigInteger) {
+                    stack[stackTop] = ((BigInteger) lNum).add((BigInteger) rNum);
+                } else if (lNum instanceof BigInteger || rNum instanceof BigInteger) {
+                    throw ScriptRuntime.typeErrorById("msg.cant.convert.to.number", "BigInt");
+                } else {
+                    stack[stackTop] = DOUBLE_MARK;
+                    sDbl[stackTop] = lNum.doubleValue() + rNum.doubleValue();
+                }
             }
             return;
         }
@@ -3506,39 +3602,47 @@ public final class Interpreter extends Icode implements Evaluator {
                 stack[stackTop] = new ConsString(rstr, (CharSequence) lhs);
             }
         } else {
-            double lDbl =
-                    (lhs instanceof Number)
-                            ? ((Number) lhs).doubleValue()
-                            : ScriptRuntime.toNumber(lhs);
-            stack[stackTop] = DOUBLE_MARK;
-            sDbl[stackTop] = lDbl + d;
+            Number lNum = (lhs instanceof Number) ? (Number) lhs : ScriptRuntime.toNumeric(lhs);
+            if (lNum instanceof BigInteger) {
+                throw ScriptRuntime.typeErrorById("msg.cant.convert.to.number", "BigInt");
+            } else {
+                stack[stackTop] = DOUBLE_MARK;
+                sDbl[stackTop] = lNum.doubleValue() + d;
+            }
         }
     }
 
     private static int doArithmetic(
             CallFrame frame, int op, Object[] stack, double[] sDbl, int stackTop) {
-        double lDbl = stack_double(frame, stackTop - 1);
-        double rDbl = stack_double(frame, stackTop);
+        Number lNum = stack_numeric(frame, stackTop - 1);
+        Number rNum = stack_numeric(frame, stackTop);
         --stackTop;
-        stack[stackTop] = DOUBLE_MARK;
+
+        Number result = null;
         switch (op) {
             case Token.SUB:
-                lDbl -= rDbl;
+                result = ScriptRuntime.subtract(lNum, rNum);
                 break;
             case Token.MUL:
-                lDbl *= rDbl;
+                result = ScriptRuntime.multiply(lNum, rNum);
                 break;
             case Token.DIV:
-                lDbl /= rDbl;
+                result = ScriptRuntime.divide(lNum, rNum);
                 break;
             case Token.MOD:
-                lDbl %= rDbl;
+                result = ScriptRuntime.remainder(lNum, rNum);
                 break;
             case Token.EXP:
-                lDbl = Math.pow(lDbl, rDbl);
+                result = ScriptRuntime.exponentiate(lNum, rNum);
                 break;
         }
-        sDbl[stackTop] = lDbl;
+
+        if (result instanceof BigInteger) {
+            stack[stackTop] = result;
+        } else {
+            stack[stackTop] = DOUBLE_MARK;
+            sDbl[stackTop] = result.doubleValue();
+        }
         return stackTop;
     }
 
