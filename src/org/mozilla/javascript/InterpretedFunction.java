@@ -8,7 +8,8 @@ package org.mozilla.javascript;
 
 import org.mozilla.javascript.debug.DebuggableScript;
 
-final class InterpretedFunction extends NativeFunction implements Script {
+final class InterpretedFunction extends NativeFunction implements Script
+{
     private static final long serialVersionUID = 541475680333911468L;
 
     InterpreterData idata;
@@ -17,7 +18,9 @@ final class InterpretedFunction extends NativeFunction implements Script {
 
     private Arguments arguments;
 
-    private InterpretedFunction(InterpreterData idata, Object staticSecurityDomain) {
+    private InterpretedFunction(InterpreterData idata,
+                                Object staticSecurityDomain)
+    {
         this.idata = idata;
 
         // Always get Context from the current thread to
@@ -39,53 +42,69 @@ final class InterpretedFunction extends NativeFunction implements Script {
         this.securityDomain = dynamicDomain;
     }
 
-    private InterpretedFunction(InterpretedFunction parent, int index) {
+    private InterpretedFunction(InterpretedFunction parent, int index)
+    {
         this.idata = parent.idata.itsNestedFunctions[index];
         this.securityController = parent.securityController;
         this.securityDomain = parent.securityDomain;
     }
 
-    /** Create script from compiled bytecode. */
-    static InterpretedFunction createScript(InterpreterData idata, Object staticSecurityDomain) {
+    /**
+     * Create script from compiled bytecode.
+     */
+    static InterpretedFunction createScript(InterpreterData idata,
+                                            Object staticSecurityDomain)
+    {
         InterpretedFunction f;
         f = new InterpretedFunction(idata, staticSecurityDomain);
         return f;
     }
 
-    /** Create function compiled from Function(...) constructor. */
-    static InterpretedFunction createFunction(
-            Context cx, Scriptable scope, InterpreterData idata, Object staticSecurityDomain) {
+    /**
+     * Create function compiled from Function(...) constructor.
+     */
+    static InterpretedFunction createFunction(Context cx,Scriptable scope,
+                                              InterpreterData idata,
+                                              Object staticSecurityDomain)
+    {
         InterpretedFunction f;
         f = new InterpretedFunction(idata, staticSecurityDomain);
         f.initScriptFunction(cx, scope, f.idata.isES6Generator);
         return f;
     }
 
-    /** Create function embedded in script or another function. */
-    static InterpretedFunction createFunction(
-            Context cx, Scriptable scope, InterpretedFunction parent, int index) {
+    /**
+     * Create function embedded in script or another function.
+     */
+    static InterpretedFunction createFunction(Context cx, Scriptable scope,
+                                              InterpretedFunction parent,
+                                              int index)
+    {
         InterpretedFunction f = new InterpretedFunction(parent, index);
         f.initScriptFunction(cx, scope, f.idata.isES6Generator);
         return f;
     }
 
+
     @Override
-    public String getFunctionName() {
+    public String getFunctionName()
+    {
         return (idata.itsName == null) ? "" : idata.itsName;
     }
 
     /**
      * Calls the function.
-     *
      * @param cx the current context
      * @param scope the scope used for the call
      * @param thisObj the value of "this"
-     * @param args function arguments. Must not be null. You can use {@link ScriptRuntime#emptyArgs}
-     *     to pass empty arguments.
+     * @param args function arguments. Must not be null. You can use
+     * {@link ScriptRuntime#emptyArgs} to pass empty arguments.
      * @return the result of the function call.
      */
     @Override
-    public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+    public Object call(Context cx, Scriptable scope, Scriptable thisObj,
+                       Object[] args)
+    {
         if (!ScriptRuntime.hasTopCall(cx)) {
             return ScriptRuntime.doTopCall(this, cx, scope, thisObj, args, idata.isStrict);
         }
@@ -93,7 +112,8 @@ final class InterpretedFunction extends NativeFunction implements Script {
     }
 
     @Override
-    public Object exec(Context cx, Scriptable scope) {
+    public Object exec(Context cx, Scriptable scope)
+    {
         if (!isScript()) {
             // Can only be applied to scripts
             throw new IllegalStateException();
@@ -101,9 +121,10 @@ final class InterpretedFunction extends NativeFunction implements Script {
         if (!ScriptRuntime.hasTopCall(cx)) {
             // It will go through "call" path. but they are equivalent
             return ScriptRuntime.doTopCall(
-                    this, cx, scope, scope, ScriptRuntime.emptyArgs, idata.isStrict);
+                this, cx, scope, scope, ScriptRuntime.emptyArgs, idata.isStrict);
         }
-        return Interpreter.interpret(this, cx, scope, scope, ScriptRuntime.emptyArgs);
+        return Interpreter.interpret(
+            this, cx, scope, scope, ScriptRuntime.emptyArgs);
     }
 
     public boolean isScript() {
@@ -111,47 +132,58 @@ final class InterpretedFunction extends NativeFunction implements Script {
     }
 
     @Override
-    public String getEncodedSource() {
+    public String getEncodedSource()
+    {
         return Interpreter.getEncodedSource(idata);
     }
 
     @Override
-    public DebuggableScript getDebuggableView() {
+    public DebuggableScript getDebuggableView()
+    {
         return idata;
     }
 
     @Override
-    public Object resumeGenerator(
-            Context cx, Scriptable scope, int operation, Object state, Object value) {
+    public Object resumeGenerator(Context cx, Scriptable scope, int operation,
+                                  Object state, Object value)
+    {
         return Interpreter.resumeGenerator(cx, scope, operation, state, value);
     }
 
     @Override
-    protected int getLanguageVersion() {
+    protected int getLanguageVersion()
+    {
         return idata.languageVersion;
     }
 
     @Override
-    protected int getParamCount() {
+    protected int getParamCount()
+    {
         return idata.argCount;
     }
 
     @Override
-    protected int getParamAndVarCount() {
+    protected int getParamAndVarCount()
+    {
         return idata.argNames.length;
     }
 
     @Override
-    protected String getParamOrVarName(int index) {
+    protected String getParamOrVarName(int index)
+    {
         return idata.argNames[index];
     }
 
     @Override
-    protected boolean getParamOrVarConst(int index) {
+    protected boolean getParamOrVarConst(int index)
+    {
         return idata.argIsConst[index];
     }
 
-    /** Provides the decompiled source of the function what is helpful while debugging. */
+    /**
+     * Provides the decompiled source of the function what is helpful
+     * while debugging.
+     */
     @Override
     public String toString() {
         return decompile(2, 0);
@@ -165,29 +197,29 @@ final class InterpretedFunction extends NativeFunction implements Script {
 
         final Context currentContext = Context.getCurrentContext();
         if (currentContext.hasFeature(Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW)) {
-            this.arguments =
-                    new Arguments(arguments) {
-                        @Override
-                        public void put(int index, Scriptable start, Object value) {
-                            // ignore
-                        }
+            this.arguments = new Arguments(arguments) {
+                @Override
+                public void put(int index, Scriptable start, Object value) {
+                    // ignore
+                }
+                
+                @Override
+                public void put(String name, Scriptable start, Object value) {
+                    // ignore
+                }
 
-                        @Override
-                        public void put(String name, Scriptable start, Object value) {
-                            // ignore
-                        }
-
-                        @Override
-                        public void delete(int index) {
-                            // ignore
-                        }
-
-                        @Override
-                        public void delete(String name) {
-                            // ignore
-                        }
-                    };
-        } else {
+                @Override
+                public void delete(int index) {
+                    // ignore
+                }
+                
+                @Override
+                public void delete(String name) {
+                    // ignore
+                }
+            };
+        }
+        else {
             this.arguments = arguments;
         }
     }
@@ -211,3 +243,4 @@ final class InterpretedFunction extends NativeFunction implements Script {
         return true;
     }
 }
+
