@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import org.mozilla.javascript.regexp.NativeRegExp;
+import org.mozilla.javascript.xml.XMLObject;
 
 /**
  * This class implements the Array native object.
@@ -145,6 +146,8 @@ public class NativeArray extends IdScriptableObject implements List {
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_forEach, "forEach", 1);
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_map, "map", 1);
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_some, "some", 1);
+            addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_find, "find", 1);
+            addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_findIndex, "findIndex", 1);
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_reduce, "reduce", 1);
             addIdFunctionProperty(ctor, ARRAY_TAG, ConstructorId_reduceRight, "reduceRight", 1);
         }
@@ -905,12 +908,16 @@ public class NativeArray extends IdScriptableObject implements List {
      * or its value is not convertible to a number.
      */
     static long getLengthProperty(Context cx, Scriptable obj) {
-        // These will both give numeric lengths within Uint32 range.
+        // These will give numeric lengths within Uint32 range.
         if (obj instanceof NativeString) {
             return ((NativeString) obj).getLength();
         }
         if (obj instanceof NativeArray) {
             return ((NativeArray) obj).getLength();
+        }
+        if (obj instanceof XMLObject) {
+            Callable lengthFunc = (Callable) ((XMLObject) obj).get("length", obj);
+            return ((Number) lengthFunc.call(cx, obj, obj, ScriptRuntime.emptyArgs)).longValue();
         }
 
         Object len = ScriptableObject.getProperty(obj, "length");
