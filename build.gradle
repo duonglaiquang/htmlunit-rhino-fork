@@ -8,7 +8,7 @@ plugins {
     id 'distribution'
     id 'checkstyle'
     id 'com.diffplug.spotless' version "5.12.1"
-    id 'com.github.spotbugs' version "4.6.2"
+    id 'com.github.spotbugs' version "4.7.1"
 }
 
 tasks.withType(JavaCompile) {
@@ -83,13 +83,16 @@ test {
     systemProperty 'file.encoding', 'UTF-8'
     if (System.getProperty('quick') != null) {
         systemProperty 'TEST_OPTLEVEL', -1
+    } else if (System.getProperty('optLevel')) {
+        systemProperty 'TEST_OPTLEVEL', System.getProperty('optLevel')
     }
+    systemProperty 'test262properties', System.getProperty('test262properties')
     maxHeapSize = "1g"
     testLogging.showStandardStreams = true
     // Many tests do not clean up contexts properly. This makes the tests much
     // more resilient at the expense of performance.
     forkEvery = 1
-    maxParallelForks = 16
+    maxParallelForks = 64
 }
 
 task sunSpiderBenchmark(type: JavaExec) {
