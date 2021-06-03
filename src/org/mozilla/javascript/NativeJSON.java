@@ -594,7 +594,6 @@ public final class NativeJSON extends IdScriptableObject {
         if (o instanceof NativeArray) {
             return true;
         }
-
         if (o instanceof NativeJavaObject) {
             Object unwrapped = ((NativeJavaObject) o).unwrap();
             return (unwrapped instanceof Collection) || (unwrapped.getClass().isArray());
