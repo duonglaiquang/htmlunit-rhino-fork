@@ -370,15 +370,6 @@ public class Context implements Closeable {
     public static final int FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE = 106;
 
     /**
-     * Special to HtmlUnit's Rhino fork.
-     *
-     * <p>Indicates that {@code Array} supports constructor properties.
-     *
-     * <p>By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_ARRAY_PROPERTIES = 107;
-
-    /**
      * Configure whether the entries in a Java Map can be accessed by properties.
      *
      * <p>Not enabled:

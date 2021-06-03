@@ -302,7 +302,7 @@ public class ContextFactory
           case Context.FEATURE_ENABLE_XML_SECURE_PARSING:
               return true;
 
-         case Context.FEATURE_ENABLE_JAVA_MAP_ACCESS:
+        case Context.FEATURE_ENABLE_JAVA_MAP_ACCESS:
               return false;
 
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
@@ -316,10 +316,6 @@ public class ContextFactory
 
             case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
                 return false;
-
-            case Context.FEATURE_HTMLUNIT_ARRAY_PROPERTIES:
-                return false;
-
         }
         // It is a bug to call the method with unknown featureIndex
         throw new IllegalArgumentException(String.valueOf(featureIndex));
