@@ -609,19 +609,6 @@ public class Parser {
                                         calledByCompileFunction
                                                 ? FunctionNode.FUNCTION_EXPRESSION
                                                 : FunctionNode.FUNCTION_STATEMENT);
-                        FunctionNode functionNode = (FunctionNode) n;
-                        if (functionNode.getName().indexOf('.') != -1) {
-                            String functionName = functionNode.getName();
-                            String left = functionName.substring(0, functionName.indexOf('.'));
-                            String right = functionName.substring(functionName.indexOf('.') + 1);
-                            PropertyGet propertyGet =
-                                    new PropertyGet(new Name(0, left), new Name(0, right));
-                            Assignment assignment =
-                                    new Assignment(Token.ASSIGN, propertyGet, functionNode, -1);
-                            functionNode.setFunctionName(null);
-                            functionNode.setFunctionType(FunctionNode.FUNCTION_EXPRESSION);
-                            n = new ExpressionStatement(assignment, !insideFunction());
-                        }
                     } catch (ParserException e) {
                         break;
                     }
