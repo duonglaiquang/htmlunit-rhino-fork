@@ -4348,25 +4348,37 @@ public class ScriptRuntime {
         Scriptable object = cx.newObject(scope);
         for (int i = 0, end = propertyIds.length; i != end; ++i) {
             Object id = propertyIds[i];
+
+            // -1 for property getter, 1 for property setter, 0 for a regular value property
             int getterSetter = getterSetters == null ? 0 : getterSetters[i];
             Object value = propertyValues[i];
-            if (id instanceof String) {
-                if (getterSetter == 0) {
-                    if (isSpecialProperty((String) id)) {
-                        Ref ref = specialRef(object, (String) id, cx, scope);
+
+            if (getterSetter == 0) {
+                if (id instanceof Symbol) {
+                    Symbol sym = (Symbol) id;
+                    SymbolScriptable so = (SymbolScriptable) object;
+                    so.put(sym, object, value);
+                } else if (id instanceof Integer) {
+                    int index = ((Integer) id).intValue();
+                    object.put(index, object, value);
+                } else {
+                    String stringId = ScriptRuntime.toString(id);
+                    if (isSpecialProperty(stringId)) {
+                        Ref ref = specialRef(object, stringId, cx, scope);
                         ref.set(cx, scope, value);
                     } else {
-                        object.put((String) id, object, value);
+                        object.put(stringId, object, value);
                     }
-                } else {
-                    ScriptableObject so = (ScriptableObject) object;
-                    Callable getterOrSetter = (Callable) value;
-                    boolean isSetter = getterSetter == 1;
-                    so.setGetterOrSetter((String) id, 0, getterOrSetter, isSetter);
                 }
             } else {
-                int index = ((Integer) id).intValue();
-                object.put(index, object, value);
+                ScriptableObject so = (ScriptableObject) object;
+                Callable getterOrSetter = (Callable) value;
+                boolean isSetter = getterSetter == 1;
+                // XXX: Do we have to handle Symbol here.
+                // This will be required, when conputedprops are supported.
+                String key = id instanceof String ? (String) id : null;
+                int index = key == null ? ((Integer) id).intValue() : 0;
+                so.setGetterOrSetter(key, index, getterOrSetter, isSetter);
             }
         }
         return object;
