@@ -16,7 +16,7 @@ import org.mozilla.javascript.NativeArrayIterator.ARRAY_ITERATOR_TYPE;
  * @see org.mozilla.javascript.NativeCall
  * @author Norris Boyd
  */
-final class Arguments extends IdScriptableObject {
+class Arguments extends IdScriptableObject {
     private static final long serialVersionUID = 4275508002492040609L;
 
     private static final String FTAG = "Arguments";
@@ -56,8 +56,7 @@ final class Arguments extends IdScriptableObject {
 
         callerObj = original.callerObj;
     }
-    
-    
+
     @Override
     public String getClassName() {
         return FTAG;

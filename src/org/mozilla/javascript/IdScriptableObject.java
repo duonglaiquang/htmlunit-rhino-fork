@@ -846,6 +846,9 @@ public abstract class IdScriptableObject extends ScriptableObject implements IdF
         //    function = new IdFunctionObject(this, tag, id, name, arity, scope);
         // } else {
         //     function = new IdFunctionObjectES6(this, tag, id, name, arity, scope);
+        // }
+
+        IdFunctionObject function = new IdFunctionObjectES6(this, tag, id, name, arity, scope);
 
         if (isSealed()) {
             function.sealObject();
