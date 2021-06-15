@@ -884,7 +884,7 @@ public class ScriptRuntime {
      * For escaping strings printed by object and array literals; not quite the same as 'escape.'
      */
     public static String escapeString(String s, char escapeQuote) {
-        if (!(escapeQuote == '"' || escapeQuote == '\'' || escapeQuote == '`')) Kit.codeBug();
+        if (!(escapeQuote == '"' || escapeQuote == '\'')) Kit.codeBug();
         StringBuilder sb = null;
 
         for (int i = 0, L = s.length(); i != L; ++i) {
@@ -4729,6 +4729,41 @@ public class ScriptRuntime {
 
     public static Scriptable wrapRegExp(Context cx, Scriptable scope, Object compiled) {
         return cx.getRegExpProxy().wrapRegExp(cx, scope, compiled);
+    }
+
+    public static Scriptable getTemplateLiteralCallSite(
+            Context cx, Scriptable scope, Object[] strings, int index) {
+        final int INTEGRITY_FREEZE = ScriptableObject.PERMANENT | ScriptableObject.READONLY;
+
+        Object callsite = strings[index];
+
+        if (callsite instanceof Scriptable) return (Scriptable) callsite;
+
+        assert callsite instanceof String[];
+        String[] vals = (String[]) callsite;
+        assert (vals.length & 1) == 0;
+
+        ScriptableObject siteObj = (ScriptableObject) cx.newArray(scope, vals.length >>> 1);
+        ScriptableObject rawObj = (ScriptableObject) cx.newArray(scope, vals.length >>> 1);
+
+        siteObj.put("raw", siteObj, rawObj);
+        siteObj.setAttributes("raw", ScriptableObject.DONTENUM);
+
+        for (int i = 0, n = vals.length; i < n; i += 2) {
+            int idx = i >>> 1;
+            siteObj.put(idx, siteObj, (vals[i] == null ? Undefined.instance : vals[i]));
+
+            rawObj.put(idx, rawObj, vals[i + 1]);
+        }
+
+        AbstractEcmaObjectOperations.setIntegrityLevel(
+                cx, rawObj, AbstractEcmaObjectOperations.INTEGRITY_LEVEL.FROZEN);
+        AbstractEcmaObjectOperations.setIntegrityLevel(
+                cx, siteObj, AbstractEcmaObjectOperations.INTEGRITY_LEVEL.FROZEN);
+
+        strings[index] = siteObj;
+
+        return siteObj;
     }
 
     private static XMLLib currentXMLLib(Context cx) {
