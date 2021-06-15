@@ -56,7 +56,9 @@ public class MemberBoxSlot extends Slot {
                 }
 
                 if (scriptable instanceof ScriptableObject) {
-                    boolean allowSetting = ((ScriptableObject) scriptable).isReadOnlySettable(name.toString(), value);
+                    boolean allowSetting =
+                            ((ScriptableObject) scriptable)
+                                    .isReadOnlySettable(name.toString(), value);
                     if (!allowSetting) {
                         return true;
                     }
