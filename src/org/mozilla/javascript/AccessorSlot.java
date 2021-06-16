@@ -1,5 +1,7 @@
 package org.mozilla.javascript;
 
+import java.io.Serializable;
+
 /**
  * This is a specialization of Slot to store various types of values that are retrieved dynamically
  * using Java and JavaScript functions. Unlike LambdaSlot, the fact that these values are accessed
@@ -14,8 +16,8 @@ public class AccessorSlot extends Slot {
 
     // The Getter and Setter may each be of a different type (JavaScript function, Java
     // function, or neither). So, use an abstraction to distinguish them.
-    transient Getter getter;
-    transient Setter setter;
+    Getter getter;
+    Setter setter;
 
     @Override
     boolean isValueSlot() {
@@ -100,14 +102,16 @@ public class AccessorSlot extends Slot {
         return getter.asGetterFunction(name, scope);
     }
 
-    interface Getter {
+    interface Getter extends Serializable {
         Object getValue(Scriptable start);
 
         Function asGetterFunction(final String name, final Scriptable scope);
     }
 
     /** This is a Getter that delegates to a Java function via a MemberBox. */
-    static final class MemberBoxGetter implements Getter {
+    static final class MemberBoxGetter implements Getter{
+        private static final long serialVersionUID = -6985513145629269853L;
+
         final MemberBox member;
 
         MemberBoxGetter(MemberBox member) {
@@ -130,6 +134,8 @@ public class AccessorSlot extends Slot {
 
     /** This is a getter that delegates to a JavaScript function. */
     static final class FunctionGetter implements Getter {
+        private static final long serialVersionUID = -1899346571745083382L;
+
         // The value of the function might actually be Undefined, so we need an Object here.
         final Object target;
 
@@ -153,7 +159,7 @@ public class AccessorSlot extends Slot {
         }
     }
 
-    interface Setter {
+    interface Setter extends Serializable {
         boolean setValue(Object value, Scriptable owner, Scriptable start);
 
         Function asSetterFunction(final String name, final Scriptable scope);
@@ -161,6 +167,8 @@ public class AccessorSlot extends Slot {
 
     /** Invoke the setter on this slot via reflection using MemberBox. */
     static final class MemberBoxSetter implements Setter {
+        private static final long serialVersionUID = -2424746843440211200L;
+
         final MemberBox member;
 
         MemberBoxSetter(MemberBox member) {
@@ -195,6 +203,8 @@ public class AccessorSlot extends Slot {
      * Invoke the setter as a JavaScript function, taking care that it might actually be Undefined.
      */
     static final class FunctionSetter implements Setter {
+        private static final long serialVersionUID = -1318635520486921020L;
+
         final Object target;
 
         FunctionSetter(Object target) {
