@@ -51,7 +51,24 @@ public class AccessorSlot extends Slot {
         if (setter == null) {
             if (getter != null) {
                 throwNoSetterException(start, value);
-                return true;
+
+                // Special to HtmlUnit's Rhino fork.
+                // return true;
+                Scriptable scriptable = start;
+
+                if (scriptable instanceof Delegator) {
+                    scriptable = ((Delegator) scriptable).getDelegee();
+                }
+
+                if (scriptable instanceof ScriptableObject) {
+                    boolean allowSetting = ((ScriptableObject) scriptable).isReadOnlySettable(name.toString(), value);
+                    if (!allowSetting) {
+                        return true;
+                    }
+                }
+                if (owner == start) {
+                    getter = null;
+                }
             }
         } else {
             return setter.setValue(value, owner, start);
