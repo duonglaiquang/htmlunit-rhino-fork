@@ -291,9 +291,6 @@ public class ContextFactory {
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return false;
 
-            case Context.FEATURE_HTMLUNIT_ERROR_STACK:
-                return true;
-
             case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
                 return false;
 

@@ -60,11 +60,6 @@ final class NativeError extends IdScriptableObject {
                 }
             }
         }
-        if (!(scope instanceof NativeObject)
-                && cx.hasFeature(Context.FEATURE_HTMLUNIT_ERROR_STACK)) {
-            EcmaError er = ScriptRuntime.constructError("", "");
-            obj.setStackProvider(er);
-        }
         return obj;
     }
 

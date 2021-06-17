@@ -327,15 +327,6 @@ public class Context implements Closeable {
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * <p>Indicates that 'exception' (technically NativeError) always exposes "stack" property.
-     *
-     * <p>By default {@link #hasFeature(int)} returns true.
-     */
-    public static final int FEATURE_HTMLUNIT_ERROR_STACK = 102;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
      * <p>Indicates that function is defined even before its declaration, inside a block.
      *
      * <p>By default {@link #hasFeature(int)} returns false.
