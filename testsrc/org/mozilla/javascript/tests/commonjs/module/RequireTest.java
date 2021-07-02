@@ -48,6 +48,49 @@ public class RequireTest extends TestCase {
         require.requireMain(cx, "testNonSandboxed");
     }
 
+    public static class CustomGlobal extends ScriptableObject {
+        public int jsFunction_test(int x) {
+            return x + 1;
+        }
+
+        @Override
+        public String getClassName() {
+            return "CustomGlobal";
+        }
+    }
+
+    public void testCustomGlobal() throws Exception {
+        final Context cx = createContext();
+        final Scriptable scope = cx.initStandardObjects();
+        ScriptableObject.defineClass(scope, CustomGlobal.class);
+
+        final Scriptable global = cx.newObject(scope, "CustomGlobal", null);
+
+        global.getPrototype().setPrototype(scope);
+        global.setParentScope(null);
+
+        final Require require =
+                new Require(
+                        cx,
+                        global,
+                        new StrongCachingModuleScriptProvider(
+                                new UrlModuleSourceProvider(
+                                        Collections.singleton(getDirectory()), null)),
+                        null,
+                        null,
+                        true);
+
+        require.install(global);
+
+        try {
+            cx.evaluateReader(
+                    global, getReader("testCustomGlobal.js"), "testCustomGlobal.js", 1, null);
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            throw ex;
+        }
+    }
+
     public void testVariousUsageErrors() throws Exception {
         testWithSandboxedRequire("testNoArgsRequire");
     }
