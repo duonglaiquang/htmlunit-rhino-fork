@@ -1802,33 +1802,15 @@ public abstract class ScriptableObject
     }
 
     protected static Scriptable ensureScriptable(Object arg) {
-        // Special to HtmlUnit's Rhino fork.
-        // if ( !(arg instanceof Scriptable) )
-        //     throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(arg));
-        // return (Scriptable) arg;
-
-        if (arg instanceof Scriptable) {
-            return (Scriptable) arg;
-        }
-        if (arg instanceof Delegator) {
-            return ((Delegator) arg).getDelegee();
-        }
-        throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(arg));
+         if ( !(arg instanceof Scriptable) )
+             throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(arg));
+         return (Scriptable) arg;
     }
 
     protected static SymbolScriptable ensureSymbolScriptable(Object arg) {
-        // Special to HtmlUnit's Rhino fork.
-        // if ( !(arg instanceof SymbolScriptable) )
-        //     throw ScriptRuntime.typeErrorById("msg.object.not.symbolscriptable", ScriptRuntime.typeof(arg));
-        // return (SymbolScriptable) arg;
-
-        if (arg instanceof ScriptableObject) {
-            return (ScriptableObject) arg;
-        }
-        if (arg instanceof Delegator) {
-            return (ScriptableObject) ((Delegator) arg).getDelegee();
-        }
-        throw ScriptRuntime.typeErrorById("msg.object.not.symbolscriptable", ScriptRuntime.typeof(arg));
+        if ( !(arg instanceof SymbolScriptable) )
+            throw ScriptRuntime.typeErrorById("msg.object.not.symbolscriptable", ScriptRuntime.typeof(arg));
+        return (SymbolScriptable) arg;
     }
 
     protected static ScriptableObject ensureScriptableObject(Object arg) {

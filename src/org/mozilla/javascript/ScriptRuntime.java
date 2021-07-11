@@ -1195,9 +1195,7 @@ public class ScriptRuntime {
 
     /** @param scope the scope that should be used to resolve primitive prototype */
     public static Scriptable toObjectOrNull(Context cx, Object obj, Scriptable scope) {
-        if (obj instanceof Delegator) {
-            return ((Delegator) obj).getDelegee();
-        } else if (obj instanceof Scriptable) {
+        if (obj instanceof Scriptable) {
             return (Scriptable) obj;
         } else if (obj != null && !Undefined.isUndefined(obj)) {
             return toObject(cx, scope, obj);
