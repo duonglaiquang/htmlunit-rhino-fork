@@ -198,6 +198,7 @@ final class MemberBox implements Serializable {
     }
 
     Object invoke(Object target, Object[] args) {
+        Method method = method();
 
         // handle delegators
         if (target instanceof Delegator) {
@@ -209,7 +210,6 @@ final class MemberBox implements Serializable {
             }
         }
 
-        Method method = method();
         try {
             try {
                 return method.invoke(target, args);
