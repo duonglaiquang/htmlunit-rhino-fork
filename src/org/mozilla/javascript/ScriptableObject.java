@@ -1802,14 +1802,15 @@ public abstract class ScriptableObject
     }
 
     protected static Scriptable ensureScriptable(Object arg) {
-         if ( !(arg instanceof Scriptable) )
-             throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(arg));
-         return (Scriptable) arg;
+        if (!(arg instanceof Scriptable))
+            throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(arg));
+        return (Scriptable) arg;
     }
 
     protected static SymbolScriptable ensureSymbolScriptable(Object arg) {
-        if ( !(arg instanceof SymbolScriptable) )
-            throw ScriptRuntime.typeErrorById("msg.object.not.symbolscriptable", ScriptRuntime.typeof(arg));
+        if (!(arg instanceof SymbolScriptable))
+            throw ScriptRuntime.typeErrorById(
+                    "msg.object.not.symbolscriptable", ScriptRuntime.typeof(arg));
         return (SymbolScriptable) arg;
     }
 
