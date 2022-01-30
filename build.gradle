@@ -441,7 +441,6 @@ spotbugs {
 }
 
 spotless {
-    ratchetFrom 'code-formatting-required'
     java {
         googleJavaFormat().aosp()
     }
