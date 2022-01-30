@@ -66,7 +66,6 @@ public class NodeTransformer {
             Scope scope,
             boolean createScopeObjects,
             boolean inStrictMode) {
-    {
         if (parent instanceof Scope
                 && Context.getContext().hasFeature(Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK)) {
             // Make sure that all "Name" children are at the start of all siblings
