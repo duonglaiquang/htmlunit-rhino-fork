@@ -49,7 +49,7 @@ public class AccessorSlot extends Slot {
     }
 
     @Override
-    public boolean setValue(Object value, Scriptable owner, Scriptable start) {
+    public boolean setValue(Object value, Scriptable owner, Scriptable start, boolean isThrow) {
         if (setter == null) {
             if (getter != null) {
                 throwNoSetterException(start, value);
@@ -58,7 +58,7 @@ public class AccessorSlot extends Slot {
         } else {
             return setter.setValue(value, owner, start);
         }
-        return super.setValue(value, owner, start);
+        return super.setValue(value, owner, start, isThrow);
     }
 
     @Override
