@@ -656,23 +656,48 @@ public class NativeObject extends IdScriptableObject implements Map {
                         Scriptable sourceObj = ScriptRuntime.toObject(cx, scope, args[i]);
                         Object[] ids = sourceObj.getIds();
                         for (Object key : ids) {
-                            if (key instanceof Integer) {
-                                int intId = (Integer) key;
-                                if (sourceObj.has(intId, sourceObj)
-                                        && isEnumerable(intId, sourceObj)) {
-                                    Object val = sourceObj.get(intId, sourceObj);
-                                    AbstractEcmaObjectOperations.put(
-                                            cx, targetObj, intId, val, true);
-                                }
-                            } else {
-                                String stringId = ScriptRuntime.toString(key);
-                                if (sourceObj.has(stringId, sourceObj)
-                                        && isEnumerable(stringId, sourceObj)) {
-                                    Object val = sourceObj.get(stringId, sourceObj);
-                                    AbstractEcmaObjectOperations.put(
-                                            cx, targetObj, stringId, val, true);
+                            // use the old impl as the new one introduces an issue with chartjs
+                            // this needs more time to analyze
+                            if (targetObj instanceof ScriptableObject) {
+                                ScriptableObject desc =
+                                        ((ScriptableObject) targetObj)
+                                                .getOwnPropertyDescriptor(cx, key);
+                                if (desc != null
+                                        && isDataDescriptor(desc)
+                                        && isFalse(desc.get("writable"))) {
+                                    throw ScriptRuntime.typeErrorById(
+                                            "msg.change.value.with.writable.false", key);
                                 }
                             }
+                            if (key instanceof String) {
+                                Object val = sourceObj.get((String) key, sourceObj);
+                                if ((val != Scriptable.NOT_FOUND) && !Undefined.isUndefined(val)) {
+                                    targetObj.put((String) key, targetObj, val);
+                                }
+                            } else if (key instanceof Number) {
+                                int ii = ScriptRuntime.toInt32(key);
+                                Object val = sourceObj.get(ii, sourceObj);
+                                if ((val != Scriptable.NOT_FOUND) && !Undefined.isUndefined(val)) {
+                                    targetObj.put(ii, targetObj, val);
+                                }
+                            }
+//                            if (key instanceof Integer) {
+//                                int intId = (Integer) key;
+//                                if (sourceObj.has(intId, sourceObj)
+//                                        && isEnumerable(intId, sourceObj)) {
+//                                    Object val = sourceObj.get(intId, sourceObj);
+//                                    AbstractEcmaObjectOperations.put(
+//                                            cx, targetObj, intId, val, true);
+//                                }
+//                            } else {
+//                                String stringId = ScriptRuntime.toString(key);
+//                                if (sourceObj.has(stringId, sourceObj)
+//                                        && isEnumerable(stringId, sourceObj)) {
+//                                    Object val = sourceObj.get(stringId, sourceObj);
+//                                    AbstractEcmaObjectOperations.put(
+//                                            cx, targetObj, stringId, val, true);
+//                                }
+//                            }
                         }
                     }
                     return targetObj;
