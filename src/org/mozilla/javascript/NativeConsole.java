@@ -206,54 +206,73 @@ public class NativeConsole extends IdScriptableObject {
     }
 
     public static String format(Context cx, Scriptable scope, Object[] args) {
-        String msg = ScriptRuntime.toString(args[0]);
-        if (msg == null || msg.length() == 0) {
+        if (args == null || args.length == 0) {
             return "";
         }
 
-        int argIndex = 1;
-        Matcher matcher = FMT_REG.matcher(msg);
-        StringBuffer buffer = new StringBuffer(msg.length() * 2);
-        while (matcher.find()) {
-            String placeHolder = matcher.group();
-            String replaceArg;
+        StringBuffer buffer = new StringBuffer();
+        int argIndex = 0;
 
-            if (placeHolder.equals("%%")) {
-                replaceArg = "%";
-            } else if (argIndex >= args.length) {
-                replaceArg = placeHolder;
-                argIndex++;
-            } else {
-                Object val = args[argIndex];
-                switch (placeHolder) {
-                    case "%s":
-                        replaceArg = formatString(val);
-                        break;
+        Object first = args[0];
+        if (first instanceof String) {
+            String msg = (String) first;
+            Matcher matcher = FMT_REG.matcher(msg);
 
-                    case "%d":
-                    case "%i":
-                        replaceArg = formatInt(val);
-                        break;
+            argIndex = 1;
+            while (matcher.find()) {
+                String placeHolder = matcher.group();
+                String replaceArg;
 
-                    case "%f":
-                        replaceArg = formatFloat(val);
-                        break;
+                if (placeHolder.equals("%%")) {
+                    replaceArg = "%";
+                } else if (argIndex >= args.length) {
+                    replaceArg = placeHolder;
+                    argIndex++;
+                } else {
+                    Object val = args[argIndex];
+                    switch (placeHolder) {
+                        case "%s":
+                            replaceArg = formatString(val);
+                            break;
 
-                    case "%o":
-                    case "%O":
-                        replaceArg = formatObj(cx, scope, val);
-                        break;
+                        case "%d":
+                        case "%i":
+                            replaceArg = formatInt(val);
+                            break;
 
-                    default:
-                        replaceArg = "";
-                        break;
+                        case "%f":
+                            replaceArg = formatFloat(val);
+                            break;
+
+                        case "%o":
+                        case "%O":
+                            replaceArg = formatObj(cx, scope, val);
+                            break;
+
+                        default:
+                            replaceArg = "";
+                            break;
+                    }
+                    argIndex++;
                 }
-                argIndex++;
+
+                matcher.appendReplacement(buffer, Matcher.quoteReplacement(replaceArg));
+            }
+            matcher.appendTail(buffer);
+        }
+
+        for (int i = argIndex; i < args.length; i++) {
+            if (buffer.length() > 0) {
+                buffer.append(' ');
             }
 
-            matcher.appendReplacement(buffer, Matcher.quoteReplacement(replaceArg));
+            final Object val = args[i];
+            if (val instanceof String) {
+                buffer.append(formatString(val));
+            } else {
+                buffer.append(formatObj(cx, scope, val));
+            }
         }
-        matcher.appendTail(buffer);
 
         return buffer.toString();
     }
@@ -323,16 +342,27 @@ public class NativeConsole extends IdScriptableObject {
             return;
         }
 
-        StringBuilder msg = new StringBuilder("Assertion failed:");
-        if (args != null && args.length > 1) {
-            for (int i = 1; i < args.length; ++i) {
-                msg.append(" ").append(ScriptRuntime.toString(args[i]));
-            }
-        } else {
-            msg.append(" console.assert");
+        if (args == null || args.length < 2) {
+            printer.print(
+                    cx,
+                    scope,
+                    Level.ERROR,
+                    new String[] {"Assertion failed: console.assert"},
+                    null);
+            return;
         }
 
-        print(cx, scope, Level.ERROR, msg.toString());
+        Object first = args[1];
+        if (first instanceof String) {
+            args[1] = "Assertion failed: " + first;
+            Object[] newArgs = new Object[args.length - 1];
+            System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+            args = newArgs;
+        } else {
+            args[0] = "Assertion failed: ";
+        }
+
+        printer.print(cx, scope, Level.ERROR, args, null);
     }
 
     private void count(Context cx, Scriptable scope, Object[] args) {

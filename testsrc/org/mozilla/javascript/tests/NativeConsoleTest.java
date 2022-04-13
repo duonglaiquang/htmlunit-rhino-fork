@@ -4,7 +4,6 @@
 package org.mozilla.javascript.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -14,8 +13,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeConsole;
 import org.mozilla.javascript.NativeConsole.Level;
+import org.mozilla.javascript.ScriptStackElement;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.SymbolKey;
+import org.mozilla.javascript.Undefined;
 
 /** Test NativeConsole */
 public class NativeConsoleTest {
@@ -80,10 +84,6 @@ public class NativeConsoleTest {
             calls.add(new PrinterCall(level, args, stack));
         }
 
-        public void clear() {
-            calls.clear();
-        }
-
         public void assertCalls(List<PrinterCall> expectedCalls) {
             assertEquals(expectedCalls.size(), calls.size());
             for (int i = 0; i < calls.size(); ++i) {
@@ -93,7 +93,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testFormatPercentSign() {
+    public void formatPercentSign() {
         assertFormat(new Object[] {"%%"}, "%");
         assertFormat(new Object[] {"a%%"}, "a%");
         assertFormat(new Object[] {"%%b"}, "%b");
@@ -103,7 +103,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testFormatString() {
+    public void formatString() {
         assertFormat(new Object[] {"%s", "abc"}, "abc");
         assertFormat(new Object[] {"%s", 100}, "100");
         assertFormat(new Object[] {"%s", 100.1D}, "100.1");
@@ -133,7 +133,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testFormatInt() {
+    public void formatInt() {
         assertFormat(new Object[] {"%d", 100}, "100");
         assertFormat(new Object[] {"%d", -100}, "-100");
         assertFormat(new Object[] {"%d", Integer.MAX_VALUE}, String.valueOf(Integer.MAX_VALUE));
@@ -170,7 +170,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testFormatFloat() {
+    public void formatFloat() {
         assertFormat(new Object[] {"%f", 100}, "100");
         assertFormat(new Object[] {"%f", -100}, "-100");
         assertFormat(new Object[] {"%f", Integer.MAX_VALUE}, String.valueOf(Integer.MAX_VALUE));
@@ -180,10 +180,10 @@ public class NativeConsoleTest {
         assertFormat(new Object[] {"%f", 100.1D}, "100.1");
         assertFormat(new Object[] {"%f", -100.7D}, "-100.7");
         assertFormat(
-                new Object[] {"%f", (double) Integer.MAX_VALUE + 0.1D},
+                new Object[] {"%f", Integer.MAX_VALUE + 0.1D},
                 String.valueOf(Integer.MAX_VALUE) + ".1");
         assertFormat(
-                new Object[] {"%f", (double) Integer.MIN_VALUE - 0.1D},
+                new Object[] {"%f", Integer.MIN_VALUE - 0.1D},
                 String.valueOf(Integer.MIN_VALUE) + ".1");
 
         assertFormat(new Object[] {"%f", Double.NaN}, "NaN");
@@ -210,7 +210,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testFormatObject() {
+    public void formatObject() {
         try (Context cx = Context.enter()) {
             Scriptable scope = cx.initStandardObjects();
 
@@ -241,7 +241,76 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testPrint() {
+    public void formatValueOnly() {
+        try (Context cx = Context.enter()) {
+            Scriptable scope = cx.initStandardObjects();
+
+            assertFormat(new Object[] {"param1", "param2"}, "param1 param2");
+            assertFormat(new Object[] {1, 2, 7}, "1 2 7");
+
+            Scriptable emptyObject = cx.newObject(scope);
+            assertFormat(new Object[] {emptyObject}, "{}");
+
+            Scriptable emptyArray = cx.newArray(scope, 0);
+            assertFormat(new Object[] {emptyArray}, "[]");
+
+            Scriptable object1 = cx.newObject(scope);
+            object1.put("int1", object1, 100);
+            object1.put("float1", object1, 100.1);
+            object1.put("string1", object1, "abc");
+            assertFormat(
+                    new Object[] {object1},
+                    "{" + "\"int1\":100," + "\"float1\":100.1," + "\"string1\":\"abc\"" + "}");
+
+            Scriptable array1 = cx.newArray(scope, 0);
+            array1.put(0, array1, 100);
+            array1.put(1, array1, 100.1);
+            array1.put(2, array1, "abc");
+            assertFormat(new Object[] {array1}, "[" + "100," + "100.1," + "\"abc\"" + "]");
+
+            Scriptable object2 = cx.newObject(scope);
+            object2.put("bigint1", object2, BigInteger.valueOf(100));
+            assertFormat(new Object[] {object2}, "[object Object]");
+        }
+    }
+
+    @Test
+    public void formatMissingPlaceholder() {
+        try (Context cx = Context.enter()) {
+            Scriptable scope = cx.initStandardObjects();
+
+            assertFormat(
+                    new Object[] {"string: %s;", "param1", "param2"}, "string: param1; param2");
+            assertFormat(new Object[] {"int: %i;", 1, 2, 7}, "int: 1; 2 7");
+
+            Scriptable emptyObject = cx.newObject(scope);
+            assertFormat(new Object[] {"", emptyObject}, "{}");
+
+            Scriptable emptyArray = cx.newArray(scope, 0);
+            assertFormat(new Object[] {"", emptyArray}, "[]");
+
+            Scriptable object1 = cx.newObject(scope);
+            object1.put("int1", object1, 100);
+            object1.put("float1", object1, 100.1);
+            object1.put("string1", object1, "abc");
+            assertFormat(
+                    new Object[] {"", object1},
+                    "{" + "\"int1\":100," + "\"float1\":100.1," + "\"string1\":\"abc\"" + "}");
+
+            Scriptable array1 = cx.newArray(scope, 0);
+            array1.put(0, array1, 100);
+            array1.put(1, array1, 100.1);
+            array1.put(2, array1, "abc");
+            assertFormat(new Object[] {"", array1}, "[" + "100," + "100.1," + "\"abc\"" + "]");
+
+            Scriptable object2 = cx.newObject(scope);
+            object2.put("bigint1", object2, BigInteger.valueOf(100));
+            assertFormat(new Object[] {"", object2}, "[object Object]");
+        }
+    }
+
+    @Test
+    public void print() {
         assertPrintCalls(
                 "console.log('abc', 123)",
                 Collections.singletonList(new PrinterCall(Level.INFO, new Object[] {"abc", 123})));
@@ -284,13 +353,37 @@ public class NativeConsoleTest {
                                 Level.ERROR, new String[] {"Assertion failed: console.assert"})));
 
         assertPrintCalls(
+                "console.assert()",
+                Collections.singletonList(
+                        new PrinterCall(
+                                Level.ERROR, new String[] {"Assertion failed: console.assert"})));
+
+        assertPrintCalls(
+                "console.assert(false, 'Fail')",
+                Collections.singletonList(
+                        new PrinterCall(Level.ERROR, new String[] {"Assertion failed: Fail"})));
+
+        assertPrintCalls(
                 "console.assert(false, 'Fail', 1)",
                 Collections.singletonList(
-                        new PrinterCall(Level.ERROR, new String[] {"Assertion failed: Fail 1"})));
+                        new PrinterCall(
+                                Level.ERROR, new Object[] {"Assertion failed: Fail", 1.0})));
+
+        assertPrintCalls(
+                "console.assert(false, 'the word is %s', 'foo')",
+                Collections.singletonList(
+                        new PrinterCall(
+                                Level.ERROR,
+                                new String[] {"Assertion failed: the word is %s", "foo"})));
+
+        assertPrintCalls(
+                "console.assert(false, 42)",
+                Collections.singletonList(
+                        new PrinterCall(Level.ERROR, new Object[] {"Assertion failed: ", 42})));
     }
 
     @Test
-    public void testCount() {
+    public void count() {
         assertPrintCalls(
                 "console.count();\n"
                         + "console.count('a');\n"
@@ -313,7 +406,7 @@ public class NativeConsoleTest {
     }
 
     @Test
-    public void testTime() {
+    public void time() {
         assertPrintCalls(
                 "console.time();\n"
                         + "console.time('a');\n"
@@ -339,14 +432,14 @@ public class NativeConsoleTest {
                         new PrinterCall(Level.WARN, new Object[] {"Timer 'c' does not exist."})));
     }
 
-    private void assertFormat(Object[] args, String expected) {
+    private static void assertFormat(Object[] args, String expected) {
         try (Context cx = Context.enter()) {
             Scriptable scope = cx.initStandardObjects();
             assertEquals(expected, NativeConsole.format(cx, scope, args));
         }
     }
 
-    private void assertPrintCalls(String source, List<PrinterCall> expectedCalls) {
+    private static void assertPrintCalls(String source, List<PrinterCall> expectedCalls) {
         DummyConsolePrinter printer = new DummyConsolePrinter();
 
         try (Context cx = Context.enter()) {
@@ -354,18 +447,6 @@ public class NativeConsoleTest {
             NativeConsole.init(scope, false, printer);
             cx.evaluateString(scope, source, "source", 1, null);
             printer.assertCalls(expectedCalls);
-        }
-    }
-
-    private void assertException(Object[] args, Class<? extends Exception> ex) {
-        try (Context cx = Context.enter()) {
-            Scriptable scope = cx.initStandardObjects();
-            NativeConsole.format(cx, scope, args);
-            fail();
-        } catch (Exception e) {
-            if (!ex.isInstance(e)) {
-                fail();
-            }
         }
     }
 }
