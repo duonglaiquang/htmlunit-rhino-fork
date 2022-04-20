@@ -288,23 +288,41 @@ public final class NativeJSON extends IdScriptableObject {
         Object value = null;
         Object unwrappedJavaValue = null;
 
+        String keyString = null;
+        int keyInt = 0;
         if (key instanceof String) {
-            value = getProperty(holder, (String) key);
+            keyString = (String) key;
+            value = getProperty(holder, keyString);
         } else {
-            value = getProperty(holder, ((Number) key).intValue());
+            keyInt = ((Number) key).intValue();
+            value = getProperty(holder, keyInt);
         }
 
         if (value instanceof Scriptable && hasProperty((Scriptable) value, "toJSON")) {
             Object toJSON = getProperty((Scriptable) value, "toJSON");
             if (toJSON instanceof Callable) {
-                value = callMethod(state.cx, (Scriptable) value, "toJSON", new Object[] {key});
+                value =
+                        callMethod(
+                                state.cx,
+                                (Scriptable) value,
+                                "toJSON",
+                                new Object[] {
+                                    keyString == null ? Integer.toString(keyInt) : keyString
+                                });
             }
         } else if (value instanceof BigInteger) {
             Scriptable bigInt = ScriptRuntime.toObject(state.cx, state.scope, value);
             if (hasProperty(bigInt, "toJSON")) {
                 Object toJSON = getProperty(bigInt, "toJSON");
                 if (toJSON instanceof Callable) {
-                    value = callMethod(state.cx, bigInt, "toJSON", new Object[] {key});
+                    value =
+                            callMethod(
+                                    state.cx,
+                                    bigInt,
+                                    "toJSON",
+                                    new Object[] {
+                                        keyString == null ? Integer.toString(keyInt) : keyString
+                                    });
                 }
             }
         }
@@ -312,6 +330,8 @@ public final class NativeJSON extends IdScriptableObject {
         if (state.replacer != null) {
             value = state.replacer.call(state.cx, state.scope, holder, new Object[] {key, value});
         }
+
+        if (ScriptRuntime.isSymbol(value)) return Undefined.instance;
 
         if (value instanceof NativeNumber) {
             value = Double.valueOf(ScriptRuntime.toNumber(value));
