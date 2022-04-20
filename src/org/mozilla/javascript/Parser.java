@@ -1593,6 +1593,17 @@ public class Parser {
             } else if (tt == Token.VAR || tt == Token.LET) {
                 consumeToken();
                 init = variables(tt, ts.tokenBeg, false);
+
+            // HtmlUnit - HACK
+            // allow const in for-of loop's by treating them as let
+            // see JavaScriptEngine2Test.constInOfLoop()
+            //
+            // HtmlUnit - HACK
+            } else if (tt == Token.CONST) {
+                consumeToken();
+                init = variables(Token.LET, ts.tokenBeg, false);
+            // HtmlUnit - HACK
+
             } else {
                 init = expr();
             }
