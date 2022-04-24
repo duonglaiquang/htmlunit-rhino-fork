@@ -288,6 +288,9 @@ public class ContextFactory {
             case Context.FEATURE_ENABLE_JAVA_MAP_ACCESS:
                 return false;
 
+            case Context.FEATURE_INTL_402:
+                return false;
+
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return false;
 
@@ -295,7 +298,6 @@ public class ContextFactory {
                 return false;
 
             case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
-                return false;
         }
         // It is a bug to call the method with unknown featureIndex
         throw new IllegalArgumentException(String.valueOf(featureIndex));
