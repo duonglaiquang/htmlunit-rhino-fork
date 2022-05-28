@@ -2373,25 +2373,28 @@ public abstract class ScriptableObject
         return Context.call(null, fun, scope, obj, args);
     }
 
-    static Scriptable getBase(Scriptable obj, String name) {
+    static Scriptable getBase(Scriptable start, String name) {
+        Scriptable obj = start;
         do {
-            if (obj.has(name, obj)) break;
+            if (obj.has(name, start)) break;
             obj = obj.getPrototype();
         } while (obj != null);
         return obj;
     }
 
-    static Scriptable getBase(Scriptable obj, int index) {
+    static Scriptable getBase(Scriptable start, int index) {
+        Scriptable obj = start;
         do {
-            if (obj.has(index, obj)) break;
+            if (obj.has(index, start)) break;
             obj = obj.getPrototype();
         } while (obj != null);
         return obj;
     }
 
-    private static Scriptable getBase(Scriptable obj, Symbol key) {
+    private static Scriptable getBase(Scriptable start, Symbol key) {
+        Scriptable obj = start;
         do {
-            if (ensureSymbolScriptable(obj).has(key, obj)) break;
+            if (ensureSymbolScriptable(obj).has(key, start)) break;
             obj = obj.getPrototype();
         } while (obj != null);
         return obj;
@@ -2668,8 +2671,7 @@ public abstract class ScriptableObject
     protected ScriptableObject getOwnPropertyDescriptor(Context cx, Object id) {
         Slot slot = querySlot(cx, id);
         if (slot == null) return null;
-        Scriptable scope = getParentScope();
-        return slot.getPropertyDescriptor(cx, (scope == null ? this : scope));
+        return slot.getPropertyDescriptor(cx, this);
     }
 
     protected Slot querySlot(Context cx, Object id) {
