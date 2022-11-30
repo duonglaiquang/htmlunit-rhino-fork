@@ -65,7 +65,7 @@ public class ScriptRuntime {
                             return 0;
                         }
                     };
-            ScriptRuntime.setFunctionProtoAndParent(thrower, cx.topCallScope);
+            ScriptRuntime.setFunctionProtoAndParent(thrower, cx, cx.topCallScope, false);
             thrower.preventExtensions();
             cx.typeErrorThrower = thrower;
         }
@@ -151,7 +151,7 @@ public class ScriptRuntime {
         scope.associateValue(LIBRARY_SCOPE_KEY, scope);
         (new ClassCache()).associate(scope);
 
-        BaseFunction.init(scope, sealed);
+        BaseFunction.init(cx, scope, sealed);
         NativeObject.init(scope, sealed);
 
         Scriptable objectProto = ScriptableObject.getObjectPrototype(scope);
@@ -183,7 +183,7 @@ public class ScriptRuntime {
 
         NativeWith.init(scope, sealed);
         NativeCall.init(scope, sealed);
-        NativeScript.init(scope, sealed);
+        NativeScript.init(cx, scope, sealed);
 
         NativeIterator.init(cx, scope, sealed); // Also initializes NativeGenerator & ES6Generator
 
@@ -4305,6 +4305,15 @@ public class ScriptRuntime {
             fn.setPrototype(ScriptableObject.getGeneratorFunctionPrototype(scope));
         } else {
             fn.setPrototype(ScriptableObject.getFunctionPrototype(scope));
+        }
+    }
+
+    public static void setFunctionProtoAndParent(
+            BaseFunction fn, Context cx, Scriptable scope, boolean es6GeneratorFunction) {
+        setFunctionProtoAndParent(fn, scope, es6GeneratorFunction);
+
+        if (cx != null && cx.getLanguageVersion() >= Context.VERSION_ES6) {
+            fn.setStandardPropertyAttributes(ScriptableObject.READONLY | ScriptableObject.DONTENUM);
         }
     }
 
