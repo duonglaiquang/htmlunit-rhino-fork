@@ -1111,7 +1111,10 @@ public abstract class ScriptableObject
         if (ctor.isVarArgsMethod()) {
             throw Context.reportRuntimeErrorById("msg.varargs.ctor", ctorMember.getName());
         }
-        ctor.initAsConstructor(scope, proto);
+        ctor.initAsConstructor(
+                scope,
+                proto,
+                ScriptableObject.DONTENUM | ScriptableObject.PERMANENT | ScriptableObject.READONLY);
 
         Method finishInit = null;
         HashSet<String> staticNames = new HashSet<String>(), instanceNames = new HashSet<String>();
