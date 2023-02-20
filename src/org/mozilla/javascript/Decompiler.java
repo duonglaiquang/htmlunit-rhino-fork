@@ -831,8 +831,7 @@ public class Decompiler {
         ++offset;
         if (type == 'S') {
             if (sb != null) {
-                int ival = source.charAt(offset);
-                number = ival;
+                number = (int) source.charAt(offset);
             }
             ++offset;
         } else if (type == 'J' || type == 'D') {

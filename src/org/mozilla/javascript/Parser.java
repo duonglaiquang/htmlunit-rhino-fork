@@ -349,15 +349,14 @@ public class Parser {
 
     private void recordComment(int lineno, String comment) {
         if (scannedComments == null) {
-            scannedComments = new ArrayList<Comment>();
+            scannedComments = new ArrayList<>();
         }
         Comment commentNode =
                 new Comment(ts.tokenBeg, ts.getTokenLength(), ts.commentType, comment);
         if (ts.commentType == Token.CommentType.JSDOC
                 && compilerEnv.isRecordingLocalJsDocComments()) {
-            Comment jsDocCommentNode =
+            currentJsDocComment =
                     new Comment(ts.tokenBeg, ts.getTokenLength(), ts.commentType, comment);
-            currentJsDocComment = jsDocCommentNode;
             currentJsDocComment.setLineno(lineno);
         }
         commentNode.setLineno(lineno);
@@ -505,9 +504,9 @@ public class Parser {
     }
 
     private void enterLoop(Loop loop) {
-        if (loopSet == null) loopSet = new ArrayList<Loop>();
+        if (loopSet == null) loopSet = new ArrayList<>();
         loopSet.add(loop);
-        if (loopAndSwitchSet == null) loopAndSwitchSet = new ArrayList<Jump>();
+        if (loopAndSwitchSet == null) loopAndSwitchSet = new ArrayList<>();
         loopAndSwitchSet.add(loop);
         pushScope(loop);
         if (currentLabel != null) {
@@ -536,7 +535,7 @@ public class Parser {
     }
 
     private void enterSwitch(SwitchStatement node) {
-        if (loopAndSwitchSet == null) loopAndSwitchSet = new ArrayList<Jump>();
+        if (loopAndSwitchSet == null) loopAndSwitchSet = new ArrayList<>();
         loopAndSwitchSet.add(node);
     }
 
@@ -784,7 +783,7 @@ public class Parser {
         // Would prefer not to call createDestructuringAssignment until codegen,
         // but the symbol definitions have to happen now, before body is parsed.
         Map<String, Node> destructuring = null;
-        Set<String> paramNames = new HashSet<String>();
+        Set<String> paramNames = new HashSet<>();
         do {
             int tt = peekToken();
             if (tt == Token.LB || tt == Token.LC) {
@@ -795,7 +794,7 @@ public class Parser {
                 // parameter name, and add a statement to the body to initialize
                 // variables from the destructuring assignment
                 if (destructuring == null) {
-                    destructuring = new HashMap<String, Node>();
+                    destructuring = new HashMap<>();
                 }
                 String pname = currentScriptOrFn.getNextTempName();
                 defineSymbol(Token.LP, pname, false);
@@ -963,8 +962,8 @@ public class Parser {
 
         // Would prefer not to call createDestructuringAssignment until codegen,
         // but the symbol definitions have to happen now, before body is parsed.
-        Map<String, Node> destructuring = new HashMap<String, Node>();
-        Set<String> paramNames = new HashSet<String>();
+        Map<String, Node> destructuring = new HashMap<>();
+        Set<String> paramNames = new HashSet<>();
 
         PerFunctionVariables savedVars = new PerFunctionVariables(fnNode);
         try {
@@ -1724,7 +1723,7 @@ public class Parser {
 
                 if (mustMatchToken(Token.RC, "msg.no.brace.after.body", true)) tryEnd = ts.tokenEnd;
                 catchNode.setLength(tryEnd - catchPos);
-                if (clauses == null) clauses = new ArrayList<CatchClause>();
+                if (clauses == null) clauses = new ArrayList<>();
                 clauses.add(catchNode);
             }
         } else if (peek != Token.FINALLY) {
@@ -2032,7 +2031,7 @@ public class Parser {
         consumeToken();
         String name = label.getName();
         if (labelSet == null) {
-            labelSet = new HashMap<String, LabeledStatement>();
+            labelSet = new HashMap<>();
         } else {
             LabeledStatement ls = labelSet.get(name);
             if (ls != null) {
@@ -2667,7 +2666,7 @@ public class Parser {
     private List<AstNode> argumentList() throws IOException {
         if (matchToken(Token.RP, true)) return null;
 
-        List<AstNode> result = new ArrayList<AstNode>();
+        List<AstNode> result = new ArrayList<>();
         boolean wasInForInit = inForInit;
         inForInit = false;
         try {
@@ -3222,7 +3221,7 @@ public class Parser {
     private AstNode arrayLiteral() throws IOException {
         if (currentToken != Token.LB) codeBug();
         int pos = ts.tokenBeg, end = ts.tokenEnd;
-        List<AstNode> elements = new ArrayList<AstNode>();
+        List<AstNode> elements = new ArrayList<>();
         ArrayLiteral pn = new ArrayLiteral(pos);
         boolean after_lb_or_comma = true;
         int afterComma = -1;
@@ -3281,7 +3280,7 @@ public class Parser {
      * @return the array comprehension or an error node
      */
     private AstNode arrayComprehension(AstNode result, int pos) throws IOException {
-        List<ArrayComprehensionLoop> loops = new ArrayList<ArrayComprehensionLoop>();
+        List<ArrayComprehensionLoop> loops = new ArrayList<>();
         while (peekToken() == Token.FOR) {
             loops.add(arrayComprehensionLoop());
         }
@@ -3388,7 +3387,7 @@ public class Parser {
     private AstNode generatorExpression(AstNode result, int pos, boolean inFunctionParams)
             throws IOException {
 
-        List<GeneratorExpressionLoop> loops = new ArrayList<GeneratorExpressionLoop>();
+        List<GeneratorExpressionLoop> loops = new ArrayList<>();
         while (peekToken() == Token.FOR) {
             loops.add(generatorExpressionLoop());
         }
@@ -3471,12 +3470,12 @@ public class Parser {
     private ObjectLiteral objectLiteral() throws IOException {
         int pos = ts.tokenBeg, lineno = ts.lineno;
         int afterComma = -1;
-        List<ObjectProperty> elems = new ArrayList<ObjectProperty>();
+        List<ObjectProperty> elems = new ArrayList<>();
         Set<String> getterNames = null;
         Set<String> setterNames = null;
         if (this.inUseStrictDirective) {
-            getterNames = new HashSet<String>();
-            setterNames = new HashSet<String>();
+            getterNames = new HashSet<>();
+            setterNames = new HashSet<>();
         }
         Comment objJsdocNode = getAndResetJsDoc();
 
@@ -3724,7 +3723,7 @@ public class Parser {
     private AstNode templateLiteral(boolean isTaggedLiteral) throws IOException {
         if (currentToken != Token.TEMPLATE_LITERAL) codeBug();
         int pos = ts.tokenBeg, end = ts.tokenEnd;
-        List<AstNode> elements = new ArrayList<AstNode>();
+        List<AstNode> elements = new ArrayList<>();
         TemplateLiteral pn = new TemplateLiteral(pos);
 
         int posChars = ts.tokenBeg + 1;
@@ -3990,7 +3989,7 @@ public class Parser {
         }
         Node comma = new Node(Token.COMMA);
         result.addChildToBack(comma);
-        List<String> destructuringNames = new ArrayList<String>();
+        List<String> destructuringNames = new ArrayList<>();
         boolean empty = true;
         switch (left.getType()) {
             case Token.ARRAYLIT:
