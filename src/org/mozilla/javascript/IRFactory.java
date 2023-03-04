@@ -91,7 +91,7 @@ public final class IRFactory extends Parser {
     private static final int ALWAYS_TRUE_BOOLEAN = 1;
     private static final int ALWAYS_FALSE_BOOLEAN = -1;
 
-    private Decompiler decompiler = new Decompiler();
+    //HtmlUnit private Decompiler decompiler = new Decompiler();
 
     public IRFactory() {
         super();
@@ -109,10 +109,11 @@ public final class IRFactory extends Parser {
      * Transforms the tree into a lower-level IR suitable for codegen. Optionally generates the
      * encoded source.
      */
-    public ScriptNode transformTree(AstRoot root) {
+    //HtmlUnit public ScriptNode transformTree(AstRoot root) {
+    public ScriptNode transformTree(AstRoot root, String sourceString) {
         currentScriptOrFn = root;
         this.inUseStrictDirective = root.isInStrictMode();
-        int sourceStartOffset = decompiler.getCurrentOffset();
+        //HtmlUnit int sourceStartOffset = decompiler.getCurrentOffset();
 
         if (Token.printTrees) {
             System.out.println("IRFactory.transformTree");
@@ -120,14 +121,16 @@ public final class IRFactory extends Parser {
         }
         ScriptNode script = (ScriptNode) transform(root);
 
-        int sourceEndOffset = decompiler.getCurrentOffset();
-        script.setEncodedSourceBounds(sourceStartOffset, sourceEndOffset);
+        //HtmlUnit int sourceEndOffset = decompiler.getCurrentOffset();
+        //HtmlUnit script.setEncodedSourceBounds(sourceStartOffset, sourceEndOffset);
+        script.setEncodedSourceBounds(0, sourceString.length());
 
         if (compilerEnv.isGeneratingSource()) {
-            script.setEncodedSource(decompiler.getEncodedSource());
+            //HtmlUnit  script.setEncodedSource(decompiler.getEncodedSource());
+            script.setEncodedSource(sourceString);
         }
 
-        decompiler = null;
+        // decompiler = null;
         return script;
     }
 
@@ -300,7 +303,7 @@ public final class IRFactory extends Parser {
     }
 
     private Node arrayCompTransformHelper(ArrayComprehension node, String arrayName) {
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         int lineno = node.getLineno();
         Node expr = transform(node.getResult());
 
@@ -313,18 +316,18 @@ public final class IRFactory extends Parser {
 
         for (int i = 0; i < numLoops; i++) {
             ArrayComprehensionLoop acl = loops.get(i);
-            decompiler.addName(" ");
-            decompiler.addToken(Token.FOR);
-            if (acl.isForEach()) {
-                decompiler.addName("each ");
-            }
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addName(" ");
+            //HtmlUnit decompiler.addToken(Token.FOR);
+            //HtmlUnit if (acl.isForEach()) {
+            //HtmlUnit     //HtmlUnit decompiler.addName("each ");
+            //HtmlUnit }
+            //HtmlUnit decompiler.addToken(Token.LP);
 
             AstNode iter = acl.getIterator();
             String name = null;
             if (iter.getType() == Token.NAME) {
                 name = iter.getString();
-                decompiler.addName(name);
+                //HtmlUnit decompiler.addName(name);
             } else {
                 // destructuring assignment
                 decompile(iter);
@@ -343,12 +346,12 @@ public final class IRFactory extends Parser {
             iterators[i] = init;
 
             if (acl.isForOf()) {
-                decompiler.addName("of ");
+                //HtmlUnit decompiler.addName("of ");
             } else {
-                decompiler.addToken(Token.IN);
+                //HtmlUnit decompiler.addToken(Token.IN);
             }
             iteratedObjs[i] = transform(acl.getIteratedObject());
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
         }
 
         // generate code for tmpArray.push(body)
@@ -359,11 +362,11 @@ public final class IRFactory extends Parser {
         Node body = new Node(Token.EXPR_VOID, call, lineno);
 
         if (node.getFilter() != null) {
-            decompiler.addName(" ");
-            decompiler.addToken(Token.IF);
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addName(" ");
+            //HtmlUnit decompiler.addToken(Token.IF);
+            //HtmlUnit decompiler.addToken(Token.LP);
             body = createIf(transform(node.getFilter()), body, null, lineno);
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
         }
 
         // Now walk loops in reverse to build up the body statement.
@@ -393,7 +396,7 @@ public final class IRFactory extends Parser {
             }
         }
 
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
 
         // Now that we've accumulated any destructuring forms,
         // add expr to the call node; it's pushed on each iteration.
@@ -405,7 +408,7 @@ public final class IRFactory extends Parser {
         if (node.isDestructuring()) {
             return node;
         }
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         List<AstNode> elems = node.getElements();
         Node array = new Node(Token.ARRAYLIT);
         List<Integer> skipIndexes = null;
@@ -419,9 +422,9 @@ public final class IRFactory extends Parser {
                 }
                 skipIndexes.add(Integer.valueOf(i));
             }
-            if (i < elems.size() - 1) decompiler.addToken(Token.COMMA);
+            //HtmlUnit if (i < elems.size() - 1) decompiler.addToken(Token.COMMA);
         }
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
         array.putIntProp(Node.DESTRUCTURING_ARRAY_LENGTH, node.getDestructuringLength());
         if (skipIndexes != null) {
             int[] skips = new int[skipIndexes.size()];
@@ -444,7 +447,7 @@ public final class IRFactory extends Parser {
             target = transform(left);
         }
 
-        decompiler.addToken(node.getType());
+        //HtmlUnit decompiler.addToken(node.getType());
         return createAssignment(node.getType(), target, transform(right));
     }
 
@@ -474,7 +477,7 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformBigInt(BigIntLiteral node) {
-        decompiler.addBigInt(node.getBigInt());
+        //HtmlUnit decompiler.addBigInt(node.getBigInt());
         return node;
     }
 
@@ -500,29 +503,29 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformBreak(BreakStatement node) {
-        decompiler.addToken(Token.BREAK);
-        if (node.getBreakLabel() != null) {
-            decompiler.addName(node.getBreakLabel().getIdentifier());
-        }
-        decompiler.addEOL(Token.SEMI);
+        //HtmlUnit decompiler.addToken(Token.BREAK);
+        //HtmlUnit if (node.getBreakLabel() != null) {
+        //HtmlUnit     decompiler.addName(node.getBreakLabel().getIdentifier());
+        //HtmlUnit }
+        //HtmlUnit decompiler.addEOL(Token.SEMI);
         return node;
     }
 
     private Node transformCondExpr(ConditionalExpression node) {
         Node test = transform(node.getTestExpression());
-        decompiler.addToken(Token.HOOK);
+        //HtmlUnit decompiler.addToken(Token.HOOK);
         Node ifTrue = transform(node.getTrueExpression());
-        decompiler.addToken(Token.COLON);
+        //HtmlUnit decompiler.addToken(Token.COLON);
         Node ifFalse = transform(node.getFalseExpression());
         return createCondExpr(test, ifTrue, ifFalse);
     }
 
     private Node transformContinue(ContinueStatement node) {
-        decompiler.addToken(Token.CONTINUE);
-        if (node.getLabel() != null) {
-            decompiler.addName(node.getLabel().getIdentifier());
-        }
-        decompiler.addEOL(Token.SEMI);
+        //HtmlUnit decompiler.addToken(Token.CONTINUE);
+        //HtmlUnit if (node.getLabel() != null) {
+        //HtmlUnit     decompiler.addName(node.getLabel().getIdentifier());
+        //HtmlUnit }
+        //HtmlUnit decompiler.addEOL(Token.SEMI);
         return node;
     }
 
@@ -530,15 +533,15 @@ public final class IRFactory extends Parser {
         loop.setType(Token.LOOP);
         pushScope(loop);
         try {
-            decompiler.addToken(Token.DO);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.DO);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             Node body = transform(loop.getBody());
-            decompiler.addToken(Token.RC);
-            decompiler.addToken(Token.WHILE);
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addToken(Token.RC);
+            //HtmlUnit decompiler.addToken(Token.WHILE);
+            //HtmlUnit decompiler.addToken(Token.LP);
             Node cond = transform(loop.getCondition());
-            decompiler.addToken(Token.RP);
-            decompiler.addEOL(Token.SEMI);
+            //HtmlUnit decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addEOL(Token.SEMI);
             return createLoop(loop, LOOP_DO_WHILE, body, cond, null, null);
         } finally {
             popScope();
@@ -549,22 +552,22 @@ public final class IRFactory extends Parser {
         // OPT: could optimize to createPropertyGet
         // iff elem is string that can not be number
         Node target = transform(node.getTarget());
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         Node element = transform(node.getElement());
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
         return new Node(Token.GETELEM, target, element);
     }
 
     private Node transformExprStmt(ExpressionStatement node) {
         Node expr = transform(node.getExpression());
-        decompiler.addEOL(Token.SEMI);
+        //HtmlUnit decompiler.addEOL(Token.SEMI);
         return new Node(node.getType(), expr, node.getLineno());
     }
 
     private Node transformForInLoop(ForInLoop loop) {
-        decompiler.addToken(Token.FOR);
-        if (loop.isForEach()) decompiler.addName("each ");
-        decompiler.addToken(Token.LP);
+      //HtmlUnit decompiler.addToken(Token.FOR);
+      //HtmlUnit if (loop.isForEach()) decompiler.addName("each ");
+      //HtmlUnit decompiler.addToken(Token.LP);
 
         loop.setType(Token.LOOP);
         pushScope(loop);
@@ -575,16 +578,16 @@ public final class IRFactory extends Parser {
                 declType = iter.getType();
             }
             Node lhs = transform(iter);
-            if (loop.isForOf()) {
-                decompiler.addName("of ");
-            } else {
-                decompiler.addToken(Token.IN);
-            }
+            //HtmlUnit if (loop.isForOf()) {
+            //HtmlUnit     decompiler.addName("of ");
+            //HtmlUnit } else {
+            //HtmlUnit     decompiler.addToken(Token.IN);
+            //HtmlUnit }
             Node obj = transform(loop.getIteratedObject());
-            decompiler.addToken(Token.RP);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             Node body = transform(loop.getBody());
-            decompiler.addEOL(Token.RC);
+            //HtmlUnit decompiler.addEOL(Token.RC);
             return createForIn(declType, loop, lhs, obj, body, loop.isForEach(), loop.isForOf());
         } finally {
             popScope();
@@ -592,8 +595,8 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformForLoop(ForLoop loop) {
-        decompiler.addToken(Token.FOR);
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.FOR);
+        //HtmlUnit decompiler.addToken(Token.LP);
         loop.setType(Token.LOOP);
         // XXX: Can't use pushScope/popScope here since 'createFor' may split
         // the scope
@@ -601,14 +604,14 @@ public final class IRFactory extends Parser {
         currentScope = loop;
         try {
             Node init = transform(loop.getInitializer());
-            decompiler.addToken(Token.SEMI);
+            //HtmlUnit decompiler.addToken(Token.SEMI);
             Node test = transform(loop.getCondition());
-            decompiler.addToken(Token.SEMI);
+            //HtmlUnit decompiler.addToken(Token.SEMI);
             Node incr = transform(loop.getIncrement());
-            decompiler.addToken(Token.RP);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             Node body = transform(loop.getBody());
-            decompiler.addEOL(Token.RC);
+            //HtmlUnit decompiler.addEOL(Token.RC);
             return createFor(loop, init, test, incr, body);
         } finally {
             currentScope = savedScope;
@@ -617,7 +620,7 @@ public final class IRFactory extends Parser {
 
     private Node transformFunction(FunctionNode fn) {
         int functionType = fn.getFunctionType();
-        int start = decompiler.markFunctionStart(functionType);
+        //HtmlUnit int start = decompiler.markFunctionStart(functionType);
         Node mexpr = decompileFunctionHeader(fn);
         int index = currentScriptOrFn.addFunction(fn);
 
@@ -632,16 +635,19 @@ public final class IRFactory extends Parser {
             ++nestingOfFunction; // only for body, not params
             Node body = transform(fn.getBody());
 
-            if (!fn.isExpressionClosure()) {
-                decompiler.addToken(Token.RC);
-            }
-            fn.setEncodedSourceBounds(start, decompiler.markFunctionEnd(start));
+            //HtmlUnit if (!fn.isExpressionClosure()) {
+            //HtmlUnit     decompiler.addToken(Token.RC);
+            //HtmlUnit }
+            //HtmlUnit fn.setEncodedSourceBounds(start, decompiler.markFunctionEnd(start));
+            int startPos = fn.getAbsolutePosition();
+            int endPos = startPos + fn.getLength();
+            fn.setEncodedSourceBounds(startPos, endPos);
 
-            if (functionType != FunctionNode.FUNCTION_EXPRESSION && !fn.isExpressionClosure()) {
-                // Add EOL only if function is not part of expression
-                // since it gets SEMI + EOL from Statement in that case
-                decompiler.addToken(Token.EOL);
-            }
+            //HtmlUnit if (functionType != FunctionNode.FUNCTION_EXPRESSION && !fn.isExpressionClosure()) {
+            //HtmlUnit     // Add EOL only if function is not part of expression
+            //HtmlUnit     // since it gets SEMI + EOL from Statement in that case
+            //HtmlUnit     decompiler.addToken(Token.EOL);
+            //HtmlUnit }
 
             if (destructuring != null) {
                 body.addChildToFront(new Node(Token.EXPR_VOID, destructuring, lineno));
@@ -666,16 +672,16 @@ public final class IRFactory extends Parser {
     private Node transformFunctionCall(FunctionCall node) {
         Node call = createCallOrNew(Token.CALL, transform(node.getTarget()));
         call.setLineno(node.getLineno());
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.LP);
         List<AstNode> args = node.getArguments();
         for (int i = 0; i < args.size(); i++) {
             AstNode arg = args.get(i);
             call.addChildToBack(transform(arg));
-            if (i < args.size() - 1) {
-                decompiler.addToken(Token.COMMA);
-            }
+            //HtmlUnit if (i < args.size() - 1) {
+            //HtmlUnit     decompiler.addToken(Token.COMMA);
+            //HtmlUnit }
         }
-        decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addToken(Token.RP);
         return call;
     }
 
@@ -688,8 +694,8 @@ public final class IRFactory extends Parser {
         fn.setFunctionType(FunctionNode.FUNCTION_EXPRESSION);
         fn.setRequiresActivation();
 
-        int functionType = fn.getFunctionType();
-        int start = decompiler.markFunctionStart(functionType);
+        //HtmlUnit int functionType = fn.getFunctionType();
+        //HtmlUnit int start = decompiler.markFunctionStart(functionType);
         Node mexpr = decompileFunctionHeader(fn);
         int index = currentScriptOrFn.addFunction(fn);
 
@@ -704,16 +710,19 @@ public final class IRFactory extends Parser {
             ++nestingOfFunction; // only for body, not params
             Node body = genExprTransformHelper(node);
 
-            if (!fn.isExpressionClosure()) {
-                decompiler.addToken(Token.RC);
-            }
-            fn.setEncodedSourceBounds(start, decompiler.markFunctionEnd(start));
+            //HtmlUnit if (!fn.isExpressionClosure()) {
+            //HtmlUnit     decompiler.addToken(Token.RC);
+            //HtmlUnit }
+            //HtmlUnit fn.setEncodedSourceBounds(start, decompiler.markFunctionEnd(start));
+            int startPos = fn.getAbsolutePosition();
+            int endPos = startPos + fn.getLength();
+            fn.setEncodedSourceBounds(startPos, endPos);
 
-            if (functionType != FunctionNode.FUNCTION_EXPRESSION && !fn.isExpressionClosure()) {
-                // Add EOL only if function is not part of expression
-                // since it gets SEMI + EOL from Statement in that case
-                decompiler.addToken(Token.EOL);
-            }
+            //HtmlUnit if (functionType != FunctionNode.FUNCTION_EXPRESSION && !fn.isExpressionClosure()) {
+            //HtmlUnit     // Add EOL only if function is not part of expression
+            //HtmlUnit     // since it gets SEMI + EOL from Statement in that case
+            //HtmlUnit     decompiler.addToken(Token.EOL);
+            //HtmlUnit }
 
             if (destructuring != null) {
                 body.addChildToFront(new Node(Token.EXPR_VOID, destructuring, lineno));
@@ -734,13 +743,13 @@ public final class IRFactory extends Parser {
 
         Node call = createCallOrNew(Token.CALL, pn);
         call.setLineno(node.getLineno());
-        decompiler.addToken(Token.LP);
-        decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.RP);
         return call;
     }
 
     private Node genExprTransformHelper(GeneratorExpression node) {
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.LP);
         int lineno = node.getLineno();
         Node expr = transform(node.getResult());
 
@@ -753,15 +762,15 @@ public final class IRFactory extends Parser {
 
         for (int i = 0; i < numLoops; i++) {
             GeneratorExpressionLoop acl = loops.get(i);
-            decompiler.addName(" ");
-            decompiler.addToken(Token.FOR);
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addName(" ");
+            //HtmlUnit decompiler.addToken(Token.FOR);
+            //HtmlUnit decompiler.addToken(Token.LP);
 
             AstNode iter = acl.getIterator();
             String name = null;
             if (iter.getType() == Token.NAME) {
                 name = iter.getString();
-                decompiler.addName(name);
+                //HtmlUnit decompiler.addName(name);
             } else {
                 // destructuring assignment
                 decompile(iter);
@@ -779,13 +788,13 @@ public final class IRFactory extends Parser {
             defineSymbol(Token.LET, name, false);
             iterators[i] = init;
 
-            if (acl.isForOf()) {
-                decompiler.addName("of ");
-            } else {
-                decompiler.addToken(Token.IN);
-            }
+            //HtmlUnit if (acl.isForOf()) {
+            //HtmlUnit     decompiler.addName("of ");
+            //HtmlUnit } else {
+            //HtmlUnit     decompiler.addToken(Token.IN);
+            //HtmlUnit }
             iteratedObjs[i] = transform(acl.getIteratedObject());
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
         }
 
         // generate code for tmpArray.push(body)
@@ -794,11 +803,11 @@ public final class IRFactory extends Parser {
         Node body = new Node(Token.EXPR_VOID, yield, lineno);
 
         if (node.getFilter() != null) {
-            decompiler.addName(" ");
-            decompiler.addToken(Token.IF);
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addName(" ");
+            //HtmlUnit decompiler.addToken(Token.IF);
+            //HtmlUnit decompiler.addToken(Token.LP);
             body = createIf(transform(node.getFilter()), body, null, lineno);
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
         }
 
         // Now walk loops in reverse to build up the body statement.
@@ -828,61 +837,61 @@ public final class IRFactory extends Parser {
             }
         }
 
-        decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addToken(Token.RP);
 
         return body;
     }
 
     private Node transformIf(IfStatement n) {
-        decompiler.addToken(Token.IF);
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.IF);
+        //HtmlUnit decompiler.addToken(Token.LP);
         Node cond = transform(n.getCondition());
-        decompiler.addToken(Token.RP);
-        decompiler.addEOL(Token.LC);
+        //HtmlUnit decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addEOL(Token.LC);
         Node ifTrue = transform(n.getThenPart());
         Node ifFalse = null;
         if (n.getElsePart() != null) {
-            decompiler.addToken(Token.RC);
-            decompiler.addToken(Token.ELSE);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.RC);
+            //HtmlUnit decompiler.addToken(Token.ELSE);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             ifFalse = transform(n.getElsePart());
         }
-        decompiler.addEOL(Token.RC);
+        //HtmlUnit decompiler.addEOL(Token.RC);
         return createIf(cond, ifTrue, ifFalse, n.getLineno());
     }
 
     private Node transformInfix(InfixExpression node) {
         Node left = transform(node.getLeft());
-        decompiler.addToken(node.getType());
+        //HtmlUnit decompiler.addToken(node.getType());
         Node right = transform(node.getRight());
-        if (node instanceof XmlDotQuery) {
-            decompiler.addToken(Token.RP);
-        }
+        //HtmlUnit if (node instanceof XmlDotQuery) {
+        //HtmlUnit     decompiler.addToken(Token.RP);
+        //HtmlUnit }
         return createBinary(node.getType(), left, right);
     }
 
     private Node transformLabeledStatement(LabeledStatement ls) {
         Label label = ls.getFirstLabel();
         List<Label> labels = ls.getLabels();
-        decompiler.addName(label.getName());
-        if (labels.size() > 1) {
-            // more than one label
-            for (Label lb : labels.subList(1, labels.size())) {
-                decompiler.addEOL(Token.COLON);
-                decompiler.addName(lb.getName());
-            }
-        }
-        if (ls.getStatement().getType() == Token.BLOCK) {
-            // reuse OBJECTLIT for ':' workaround, cf. transformObjectLiteral()
-            decompiler.addToken(Token.OBJECTLIT);
-            decompiler.addEOL(Token.LC);
-        } else {
-            decompiler.addEOL(Token.COLON);
-        }
+        //HtmlUnit decompiler.addName(label.getName());
+        //HtmlUnit if (labels.size() > 1) {
+        //HtmlUnit     // more than one label
+        //HtmlUnit     for (Label lb : labels.subList(1, labels.size())) {
+        //HtmlUnit         decompiler.addEOL(Token.COLON);
+        //HtmlUnit         decompiler.addName(lb.getName());
+        //HtmlUnit     }
+        //HtmlUnit }
+        //HtmlUnit if (ls.getStatement().getType() == Token.BLOCK) {
+        //HtmlUnit     // reuse OBJECTLIT for ':' workaround, cf. transformObjectLiteral()
+        //HtmlUnit     decompiler.addToken(Token.OBJECTLIT);
+        //HtmlUnit     decompiler.addEOL(Token.LC);
+        //HtmlUnit } else {
+        //HtmlUnit     decompiler.addEOL(Token.COLON);
+        //HtmlUnit }
         Node statement = transform(ls.getStatement());
-        if (ls.getStatement().getType() == Token.BLOCK) {
-            decompiler.addEOL(Token.RC);
-        }
+        //HtmlUnit if (ls.getStatement().getType() == Token.BLOCK) {
+        //HtmlUnit     decompiler.addEOL(Token.RC);
+        //HtmlUnit }
 
         // Make a target and put it _after_ the statement node.  Add in the
         // LABEL node, so breaks get the right target.
@@ -896,22 +905,22 @@ public final class IRFactory extends Parser {
     private Node transformLetNode(LetNode node) {
         pushScope(node);
         try {
-            decompiler.addToken(Token.LET);
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addToken(Token.LET);
+            //HtmlUnit decompiler.addToken(Token.LP);
             Node vars = transformVariableInitializers(node.getVariables());
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
             node.addChildToBack(vars);
             boolean letExpr = node.getType() == Token.LETEXPR;
             if (node.getBody() != null) {
-                if (letExpr) {
-                    decompiler.addName(" ");
-                } else {
-                    decompiler.addEOL(Token.LC);
-                }
+                //HtmlUnit if (letExpr) {
+                //HtmlUnit     decompiler.addName(" ");
+                //HtmlUnit } else {
+                //HtmlUnit     decompiler.addEOL(Token.LC);
+                //HtmlUnit }
                 node.addChildToBack(transform(node.getBody()));
-                if (!letExpr) {
-                    decompiler.addEOL(Token.RC);
-                }
+                //HtmlUnit if (!letExpr) {
+                //HtmlUnit     decompiler.addEOL(Token.RC);
+                //HtmlUnit }
             }
             return node;
         } finally {
@@ -920,29 +929,29 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformLiteral(AstNode node) {
-        decompiler.addToken(node.getType());
+        //HtmlUnit decompiler.addToken(node.getType());
         return node;
     }
 
     private Node transformName(Name node) {
-        decompiler.addName(node.getIdentifier());
+        //HtmlUnit decompiler.addName(node.getIdentifier());
         return node;
     }
 
     private Node transformNewExpr(NewExpression node) {
-        decompiler.addToken(Token.NEW);
+        //HtmlUnit decompiler.addToken(Token.NEW);
         Node nx = createCallOrNew(Token.NEW, transform(node.getTarget()));
         nx.setLineno(node.getLineno());
         List<AstNode> args = node.getArguments();
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.LP);
         for (int i = 0; i < args.size(); i++) {
             AstNode arg = args.get(i);
             nx.addChildToBack(transform(arg));
-            if (i < args.size() - 1) {
-                decompiler.addToken(Token.COMMA);
-            }
+            //HtmlUnit if (i < args.size() - 1) {
+            //HtmlUnit     decompiler.addToken(Token.COMMA);
+            //HtmlUnit }
         }
-        decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addToken(Token.RP);
         if (node.getInitializer() != null) {
             nx.addChildToBack(transformObjectLiteral(node.getInitializer()));
         }
@@ -950,7 +959,7 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformNumber(NumberLiteral node) {
-        decompiler.addNumber(node.getNumber());
+        //HtmlUnit decompiler.addNumber(node.getNumber());
         return node;
     }
 
@@ -961,7 +970,7 @@ public final class IRFactory extends Parser {
         // createObjectLiteral rewrites its argument as object
         // creation plus object property entries, so later compiler
         // stages don't need to know about object literals.
-        decompiler.addToken(Token.LC);
+        //HtmlUnit decompiler.addToken(Token.LC);
         List<ObjectProperty> elems = node.getElements();
         Node object = new Node(Token.OBJECTLIT);
         Object[] properties;
@@ -971,21 +980,21 @@ public final class IRFactory extends Parser {
             int size = elems.size(), i = 0;
             properties = new Object[size];
             for (ObjectProperty prop : elems) {
-                if (prop.isGetterMethod()) {
-                    decompiler.addToken(Token.GET);
-                } else if (prop.isSetterMethod()) {
-                    decompiler.addToken(Token.SET);
-                } else if (prop.isNormalMethod()) {
-                    decompiler.addToken(Token.METHOD);
-                }
+                //HtmlUnit if (prop.isGetterMethod()) {
+                //HtmlUnit     decompiler.addToken(Token.GET);
+                //HtmlUnit } else if (prop.isSetterMethod()) {
+                //HtmlUnit     decompiler.addToken(Token.SET);
+                //HtmlUnit } else if (prop.isNormalMethod()) {
+                //HtmlUnit     decompiler.addToken(Token.METHOD);
+                //HtmlUnit }
 
                 properties[i++] = getPropKey(prop.getLeft());
 
                 // OBJECTLIT is used as ':' in object literal for
                 // decompilation to solve spacing ambiguity.
-                if (!(prop.isMethod())) {
-                    decompiler.addToken(Token.OBJECTLIT);
-                }
+                //HtmlUnit if (!(prop.isMethod())) {
+                //HtmlUnit     decompiler.addToken(Token.OBJECTLIT);
+                //HtmlUnit }
 
                 Node right = transform(prop.getRight());
                 if (prop.isGetterMethod()) {
@@ -997,12 +1006,12 @@ public final class IRFactory extends Parser {
                 }
                 object.addChildToBack(right);
 
-                if (i < size) {
-                    decompiler.addToken(Token.COMMA);
-                }
+                //HtmlUnit if (i < size) {
+                //HtmlUnit     decompiler.addToken(Token.COMMA);
+                //HtmlUnit }
             }
         }
-        decompiler.addToken(Token.RC);
+        //HtmlUnit decompiler.addToken(Token.RC);
         object.putProp(Node.OBJECT_IDS_PROP, properties);
         return object;
     }
@@ -1011,15 +1020,15 @@ public final class IRFactory extends Parser {
         Object key;
         if (id instanceof Name) {
             String s = ((Name) id).getIdentifier();
-            decompiler.addName(s);
+            //HtmlUnit decompiler.addName(s);
             key = ScriptRuntime.getIndexObject(s);
         } else if (id instanceof StringLiteral) {
             String s = ((StringLiteral) id).getValue();
-            decompiler.addString(s);
+            //HtmlUnit decompiler.addString(s);
             key = ScriptRuntime.getIndexObject(s);
         } else if (id instanceof NumberLiteral) {
             double n = ((NumberLiteral) id).getNumber();
-            decompiler.addNumber(n);
+            //HtmlUnit decompiler.addNumber(n);
             key = ScriptRuntime.getIndexObject(n);
         } else {
             throw Kit.codeBug();
@@ -1029,17 +1038,17 @@ public final class IRFactory extends Parser {
 
     private Node transformParenExpr(ParenthesizedExpression node) {
         AstNode expr = node.getExpression();
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.LP);
         int count = 1;
         while (expr instanceof ParenthesizedExpression) {
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addToken(Token.LP);
             count++;
             expr = ((ParenthesizedExpression) expr).getExpression();
         }
         Node result = transform(expr);
-        for (int i = 0; i < count; i++) {
-            decompiler.addToken(Token.RP);
-        }
+        //HtmlUnit for (int i = 0; i < count; i++) {
+        //HtmlUnit     decompiler.addToken(Token.RP);
+        //HtmlUnit }
         result.putProp(Node.PARENTHESIZED_PROP, Boolean.TRUE);
         return result;
     }
@@ -1047,24 +1056,24 @@ public final class IRFactory extends Parser {
     private Node transformPropertyGet(PropertyGet node) {
         Node target = transform(node.getTarget());
         String name = node.getProperty().getIdentifier();
-        decompiler.addToken(Token.DOT);
-        decompiler.addName(name);
+        //HtmlUnit decompiler.addToken(Token.DOT);
+        //HtmlUnit decompiler.addName(name);
         return createPropertyGet(target, null, name, 0);
     }
 
     private Node transformTemplateLiteral(TemplateLiteral node) {
-        decompiler.addToken(Token.TEMPLATE_LITERAL);
+        //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL);
         List<AstNode> elems = node.getElements();
         // start with an empty string to ensure ToString() for each substitution
         Node pn = Node.newString("");
         for (AstNode elem : elems) {
             if (elem.getType() != Token.TEMPLATE_CHARS) {
-                decompiler.addToken(Token.TEMPLATE_LITERAL_SUBST);
+                //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL_SUBST);
                 pn = createBinary(Token.ADD, pn, transform(elem));
-                decompiler.addToken(Token.RC);
+                //HtmlUnit decompiler.addToken(Token.RC);
             } else {
                 TemplateCharacters chars = (TemplateCharacters) elem;
-                decompiler.addTemplateLiteral(chars.getRawValue());
+                //HtmlUnit decompiler.addTemplateLiteral(chars.getRawValue());
                 // skip empty parts, e.g. `xx${expr}xx` where xx denotes the empty string
                 String value = chars.getValue();
                 if (value.length() > 0) {
@@ -1072,34 +1081,34 @@ public final class IRFactory extends Parser {
                 }
             }
         }
-        decompiler.addToken(Token.TEMPLATE_LITERAL);
+        //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL);
         return pn;
     }
 
     private Node transformTemplateLiteralCall(TaggedTemplateLiteral node) {
         Node call = createCallOrNew(Token.CALL, transform(node.getTarget()));
         call.setLineno(node.getLineno());
-        decompiler.addToken(Token.TEMPLATE_LITERAL);
+        //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL);
         TemplateLiteral templateLiteral = (TemplateLiteral) node.getTemplateLiteral();
         List<AstNode> elems = templateLiteral.getElements();
         call.addChildToBack(templateLiteral);
         for (AstNode elem : elems) {
             if (elem.getType() != Token.TEMPLATE_CHARS) {
-                decompiler.addToken(Token.TEMPLATE_LITERAL_SUBST);
+                //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL_SUBST);
                 call.addChildToBack(transform(elem));
-                decompiler.addToken(Token.RC);
+                //HtmlUnit decompiler.addToken(Token.RC);
             } else {
                 TemplateCharacters chars = (TemplateCharacters) elem;
-                decompiler.addTemplateLiteral(chars.getRawValue());
+                //HtmlUnit decompiler.addTemplateLiteral(chars.getRawValue());
             }
         }
         currentScriptOrFn.addTemplateLiteral(templateLiteral);
-        decompiler.addToken(Token.TEMPLATE_LITERAL);
+        //HtmlUnit decompiler.addToken(Token.TEMPLATE_LITERAL);
         return call;
     }
 
     private Node transformRegExp(RegExpLiteral node) {
-        decompiler.addRegexp(node.getValue(), node.getFlags());
+        //HtmlUnit decompiler.addRegexp(node.getValue(), node.getFlags());
         currentScriptOrFn.addRegExp(node);
         return node;
     }
@@ -1107,23 +1116,23 @@ public final class IRFactory extends Parser {
     private Node transformReturn(ReturnStatement node) {
         boolean expClosure = Boolean.TRUE.equals(node.getProp(Node.EXPRESSION_CLOSURE_PROP));
         boolean isArrow = Boolean.TRUE.equals(node.getProp(Node.ARROW_FUNCTION_PROP));
-        if (expClosure) {
-            if (!isArrow) {
-                decompiler.addName(" ");
-            }
-        } else {
-            decompiler.addToken(Token.RETURN);
-        }
+        //HtmlUnit if (expClosure) {
+        //HtmlUnit     if (!isArrow) {
+        //HtmlUnit         decompiler.addName(" ");
+        //HtmlUnit     }
+        //HtmlUnit } else {
+        //HtmlUnit     decompiler.addToken(Token.RETURN);
+        //HtmlUnit }
         AstNode rv = node.getReturnValue();
         Node value = rv == null ? null : transform(rv);
-        if (!expClosure) decompiler.addEOL(Token.SEMI);
+        //HtmlUnit if (!expClosure) decompiler.addEOL(Token.SEMI);
         return rv == null
                 ? new Node(Token.RETURN, node.getLineno())
                 : new Node(Token.RETURN, value, node.getLineno());
     }
 
     private Node transformScript(ScriptNode node) {
-        decompiler.addToken(Token.SCRIPT);
+        //HtmlUnit decompiler.addToken(Token.SCRIPT);
         if (currentScope != null) Kit.codeBug();
         currentScope = node;
         Node body = new Node(Token.BLOCK);
@@ -1139,7 +1148,7 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformString(StringLiteral node) {
-        decompiler.addString(node.getValue());
+        //HtmlUnit decompiler.addString(node.getValue());
         return Node.newString(node.getValue());
     }
 
@@ -1183,26 +1192,26 @@ public final class IRFactory extends Parser {
         // instead of:
         //     goto labelDefault;
 
-        decompiler.addToken(Token.SWITCH);
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.SWITCH);
+        //HtmlUnit decompiler.addToken(Token.LP);
         Node switchExpr = transform(node.getExpression());
-        decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addToken(Token.RP);
         node.addChildToBack(switchExpr);
 
         Node block = new Node(Token.BLOCK, node, node.getLineno());
-        decompiler.addEOL(Token.LC);
+        //HtmlUnit decompiler.addEOL(Token.LC);
 
         for (SwitchCase sc : node.getCases()) {
             AstNode expr = sc.getExpression();
             Node caseExpr = null;
 
             if (expr != null) {
-                decompiler.addToken(Token.CASE);
+                //HtmlUnit decompiler.addToken(Token.CASE);
                 caseExpr = transform(expr);
             } else {
-                decompiler.addToken(Token.DEFAULT);
+                //HtmlUnit decompiler.addToken(Token.DEFAULT);
             }
-            decompiler.addEOL(Token.COLON);
+            //HtmlUnit decompiler.addEOL(Token.COLON);
 
             List<AstNode> stmts = sc.getStatements();
             Node body = new Block();
@@ -1213,62 +1222,62 @@ public final class IRFactory extends Parser {
             }
             addSwitchCase(block, caseExpr, body);
         }
-        decompiler.addEOL(Token.RC);
+        //HtmlUnit decompiler.addEOL(Token.RC);
         closeSwitch(block);
         return block;
     }
 
     private Node transformThrow(ThrowStatement node) {
-        decompiler.addToken(Token.THROW);
+        //HtmlUnit decompiler.addToken(Token.THROW);
         Node value = transform(node.getExpression());
-        decompiler.addEOL(Token.SEMI);
+        //HtmlUnit decompiler.addEOL(Token.SEMI);
         return new Node(Token.THROW, value, node.getLineno());
     }
 
     private Node transformTry(TryStatement node) {
-        decompiler.addToken(Token.TRY);
-        decompiler.addEOL(Token.LC);
+        //HtmlUnit decompiler.addToken(Token.TRY);
+        //HtmlUnit decompiler.addEOL(Token.LC);
         Node tryBlock = transform(node.getTryBlock());
-        decompiler.addEOL(Token.RC);
+        //HtmlUnit decompiler.addEOL(Token.RC);
 
         Node catchBlocks = new Block();
         for (CatchClause cc : node.getCatchClauses()) {
-            decompiler.addToken(Token.CATCH);
+            //HtmlUnit decompiler.addToken(Token.CATCH);
 
             Name varName = cc.getVarName();
             Node catchCond = null;
             Node varNameNode = null;
 
             if (varName != null) {
-                decompiler.addToken(Token.LP);
-                decompiler.addName(varName.getIdentifier());
+                //HtmlUnit decompiler.addToken(Token.LP);
+                //HtmlUnit decompiler.addName(varName.getIdentifier());
 
                 varNameNode = createName(varName.getIdentifier());
 
                 AstNode ccc = cc.getCatchCondition();
                 if (ccc != null) {
-                    decompiler.addName(" ");
-                    decompiler.addToken(Token.IF);
+                    //HtmlUnit decompiler.addName(" ");
+                    //HtmlUnit decompiler.addToken(Token.IF);
                     catchCond = transform(ccc);
                 } else {
                     catchCond = new EmptyExpression();
                 }
 
-                decompiler.addToken(Token.RP);
+                //HtmlUnit decompiler.addToken(Token.RP);
             }
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addEOL(Token.LC);
 
             Node body = transform(cc.getBody());
-            decompiler.addEOL(Token.RC);
+            //HtmlUnit decompiler.addEOL(Token.RC);
 
             catchBlocks.addChildToBack(createCatch(varNameNode, catchCond, body, cc.getLineno()));
         }
         Node finallyBlock = null;
         if (node.getFinallyBlock() != null) {
-            decompiler.addToken(Token.FINALLY);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.FINALLY);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             finallyBlock = transform(node.getFinallyBlock());
-            decompiler.addEOL(Token.RC);
+            //HtmlUnit decompiler.addEOL(Token.RC);
         }
         return createTryCatchFinally(tryBlock, catchBlocks, finallyBlock, node.getLineno());
     }
@@ -1278,7 +1287,7 @@ public final class IRFactory extends Parser {
         if (type == Token.DEFAULTNAMESPACE) {
             return transformDefaultXmlNamepace(node);
         }
-        decompiler.addToken(type);
+        //HtmlUnit decompiler.addToken(type);
 
         Node child = transform(node.getOperand());
         return createUnary(type, child);
@@ -1287,24 +1296,24 @@ public final class IRFactory extends Parser {
     private Node transformUpdate(UpdateExpression node) {
         int type = node.getType();
         if (node.isPrefix()) {
-            decompiler.addToken(type);
+            //HtmlUnit decompiler.addToken(type);
         }
         Node child = transform(node.getOperand());
         if (node.isPostfix()) {
-            decompiler.addToken(type);
+            //HtmlUnit decompiler.addToken(type);
         }
         return createIncDec(type, node.isPostfix(), child);
     }
 
     private Node transformVariables(VariableDeclaration node) {
-        decompiler.addToken(node.getType());
+        //HtmlUnit decompiler.addToken(node.getType());
         transformVariableInitializers(node);
 
         // Might be most robust to have parser record whether it was
         // a variable declaration statement, possibly as a node property.
         AstNode parent = node.getParent();
         if (!(parent instanceof Loop) && !(parent instanceof LetNode)) {
-            decompiler.addEOL(Token.SEMI);
+            //HtmlUnit decompiler.addEOL(Token.SEMI);
         }
         return node;
     }
@@ -1326,7 +1335,7 @@ public final class IRFactory extends Parser {
 
             Node right = null;
             if (init != null) {
-                decompiler.addToken(Token.ASSIGN);
+                //HtmlUnit decompiler.addToken(Token.ASSIGN);
                 right = transform(init);
             }
 
@@ -1344,23 +1353,23 @@ public final class IRFactory extends Parser {
                 node.addChildToBack(left);
             }
             if (i++ < size - 1) {
-                decompiler.addToken(Token.COMMA);
+                //HtmlUnit decompiler.addToken(Token.COMMA);
             }
         }
         return node;
     }
 
     private Node transformWhileLoop(WhileLoop loop) {
-        decompiler.addToken(Token.WHILE);
+        //HtmlUnit decompiler.addToken(Token.WHILE);
         loop.setType(Token.LOOP);
         pushScope(loop);
         try {
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addToken(Token.LP);
             Node cond = transform(loop.getCondition());
-            decompiler.addToken(Token.RP);
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addEOL(Token.LC);
             Node body = transform(loop.getBody());
-            decompiler.addEOL(Token.RC);
+            //HtmlUnit decompiler.addEOL(Token.RC);
             return createLoop(loop, LOOP_WHILE, body, cond, null, null);
         } finally {
             popScope();
@@ -1368,18 +1377,18 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformWith(WithStatement node) {
-        decompiler.addToken(Token.WITH);
-        decompiler.addToken(Token.LP);
+        //HtmlUnit decompiler.addToken(Token.WITH);
+        //HtmlUnit decompiler.addToken(Token.LP);
         Node expr = transform(node.getExpression());
-        decompiler.addToken(Token.RP);
-        decompiler.addEOL(Token.LC);
+        //HtmlUnit decompiler.addToken(Token.RP);
+        //HtmlUnit decompiler.addEOL(Token.LC);
         Node stmt = transform(node.getStatement());
-        decompiler.addEOL(Token.RC);
+        //HtmlUnit decompiler.addEOL(Token.RC);
         return createWith(expr, stmt, node.getLineno());
     }
 
     private Node transformYield(Yield node) {
-        decompiler.addToken(node.getType());
+        //HtmlUnit decompiler.addToken(node.getType());
         Node kid = node.getValue() == null ? null : transform(node.getValue());
         if (kid != null) return new Node(node.getType(), kid, node.getLineno());
         return new Node(node.getType(), node.getLineno());
@@ -1400,7 +1409,7 @@ public final class IRFactory extends Parser {
         for (XmlFragment frag : frags) {
             if (frag instanceof XmlString) {
                 String xml = ((XmlString) frag).getXml();
-                decompiler.addName(xml);
+                //HtmlUnit decompiler.addName(xml);
                 if (pn == null) {
                     pn = createString(xml);
                 } else {
@@ -1410,13 +1419,13 @@ public final class IRFactory extends Parser {
                 XmlExpression xexpr = (XmlExpression) frag;
                 boolean isXmlAttr = xexpr.isXmlAttribute();
                 Node expr;
-                decompiler.addToken(Token.LC);
+                //HtmlUnit decompiler.addToken(Token.LC);
                 if (xexpr.getExpression() instanceof EmptyExpression) {
                     expr = createString("");
                 } else {
                     expr = transform(xexpr.getExpression());
                 }
-                decompiler.addToken(Token.RC);
+                //HtmlUnit decompiler.addToken(Token.RC);
                 if (isXmlAttr) {
                     // Need to put the result in double quotes
                     expr = createUnary(Token.ESCXMLATTR, expr);
@@ -1439,9 +1448,9 @@ public final class IRFactory extends Parser {
         int flags = ref.isAttributeAccess() ? Node.ATTRIBUTE_FLAG : 0;
         if (node.getType() == Token.DOTDOT) {
             flags |= Node.DESCENDANTS_FLAG;
-            decompiler.addToken(Token.DOTDOT);
+            //HtmlUnit decompiler.addToken(Token.DOTDOT);
         } else {
-            decompiler.addToken(Token.DOT);
+            //HtmlUnit decompiler.addToken(Token.DOT);
         }
         return transformXmlRef(pn, ref, flags);
     }
@@ -1453,29 +1462,29 @@ public final class IRFactory extends Parser {
     }
 
     private Node transformXmlRef(Node pn, XmlRef node, int memberTypeFlags) {
-        if ((memberTypeFlags & Node.ATTRIBUTE_FLAG) != 0) decompiler.addToken(Token.XMLATTR);
+        //HtmlUnit if ((memberTypeFlags & Node.ATTRIBUTE_FLAG) != 0) decompiler.addToken(Token.XMLATTR);
         Name namespace = node.getNamespace();
         String ns = namespace != null ? namespace.getIdentifier() : null;
-        if (ns != null) {
-            decompiler.addName(ns);
-            decompiler.addToken(Token.COLONCOLON);
-        }
+        //HtmlUnit if (ns != null) {
+        //HtmlUnit     decompiler.addName(ns);
+        //HtmlUnit     decompiler.addToken(Token.COLONCOLON);
+        //HtmlUnit }
         if (node instanceof XmlPropRef) {
             String name = ((XmlPropRef) node).getPropName().getIdentifier();
-            decompiler.addName(name);
+            //HtmlUnit decompiler.addName(name);
             return createPropertyGet(pn, ns, name, memberTypeFlags);
         }
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         Node expr = transform(((XmlElemRef) node).getExpression());
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
         return createElementGet(pn, ns, expr, memberTypeFlags);
     }
 
     private Node transformDefaultXmlNamepace(UnaryExpression node) {
-        decompiler.addToken(Token.DEFAULT);
-        decompiler.addName(" xml");
-        decompiler.addName(" namespace");
-        decompiler.addToken(Token.ASSIGN);
+        //HtmlUnit decompiler.addToken(Token.DEFAULT);
+        //HtmlUnit decompiler.addName(" xml");
+        //HtmlUnit decompiler.addName(" namespace");
+        //HtmlUnit decompiler.addToken(Token.ASSIGN);
         Node child = transform(node.getOperand());
         return createUnary(Token.DEFAULTNAMESPACE, child);
     }
@@ -2442,30 +2451,30 @@ public final class IRFactory extends Parser {
     Node decompileFunctionHeader(FunctionNode fn) {
         Node mexpr = null;
         if (fn.getFunctionName() != null) {
-            decompiler.addName(fn.getName());
+            //HtmlUnit decompiler.addName(fn.getName());
         } else if (fn.getMemberExprNode() != null) {
             mexpr = transform(fn.getMemberExprNode());
         }
         boolean isArrow = fn.getFunctionType() == FunctionNode.ARROW_FUNCTION;
         boolean noParen = isArrow && fn.getLp() == -1;
         if (!noParen) {
-            decompiler.addToken(Token.LP);
+            //HtmlUnit decompiler.addToken(Token.LP);
         }
         List<AstNode> params = fn.getParams();
         for (int i = 0; i < params.size(); i++) {
             decompile(params.get(i));
             if (i < params.size() - 1) {
-                decompiler.addToken(Token.COMMA);
+                //HtmlUnit decompiler.addToken(Token.COMMA);
             }
         }
         if (!noParen) {
-            decompiler.addToken(Token.RP);
+            //HtmlUnit decompiler.addToken(Token.RP);
         }
         if (isArrow) {
-            decompiler.addToken(Token.ARROW);
+            //HtmlUnit decompiler.addToken(Token.ARROW);
         }
         if (!fn.isExpressionClosure()) {
-            decompiler.addEOL(Token.LC);
+            //HtmlUnit decompiler.addEOL(Token.LC);
         }
         return mexpr;
     }
@@ -2479,16 +2488,16 @@ public final class IRFactory extends Parser {
                 decompileObjectLiteral((ObjectLiteral) node);
                 break;
             case Token.STRING:
-                decompiler.addString(((StringLiteral) node).getValue());
+                //HtmlUnit decompiler.addString(((StringLiteral) node).getValue());
                 break;
             case Token.NAME:
-                decompiler.addName(((Name) node).getIdentifier());
+                //HtmlUnit decompiler.addName(((Name) node).getIdentifier());
                 break;
             case Token.NUMBER:
-                decompiler.addNumber(((NumberLiteral) node).getNumber());
+                //HtmlUnit decompiler.addNumber(((NumberLiteral) node).getNumber());
                 break;
             case Token.BIGINT:
-                decompiler.addBigInt(node.getBigInt());
+                //HtmlUnit decompiler.addBigInt(node.getBigInt());
                 break;
             case Token.GETPROP:
                 decompilePropertyGet((PropertyGet) node);
@@ -2499,7 +2508,7 @@ public final class IRFactory extends Parser {
                 decompileElementGet((ElementGet) node);
                 break;
             case Token.THIS:
-                decompiler.addToken(node.getType());
+                //HtmlUnit decompiler.addToken(node.getType());
                 break;
             default:
                 Kit.codeBug("unexpected token: " + Token.typeToName(node.getType()));
@@ -2508,22 +2517,22 @@ public final class IRFactory extends Parser {
 
     // used for destructuring forms, since we don't transform() them
     void decompileArrayLiteral(ArrayLiteral node) {
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         List<AstNode> elems = node.getElements();
         int size = elems.size();
         for (int i = 0; i < size; i++) {
             AstNode elem = elems.get(i);
             decompile(elem);
             if (i < size - 1) {
-                decompiler.addToken(Token.COMMA);
+                //HtmlUnit decompiler.addToken(Token.COMMA);
             }
         }
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
     }
 
     // only used for destructuring forms
     void decompileObjectLiteral(ObjectLiteral node) {
-        decompiler.addToken(Token.LC);
+        //HtmlUnit decompiler.addToken(Token.LC);
         List<ObjectProperty> props = node.getElements();
         int size = props.size();
         for (int i = 0; i < size; i++) {
@@ -2532,28 +2541,28 @@ public final class IRFactory extends Parser {
                     Boolean.TRUE.equals(prop.getProp(Node.SHORTHAND_PROPERTY_NAME));
             decompile(prop.getLeft());
             if (!shorthandPropertyName) {
-                decompiler.addToken(Token.COLON);
+                //HtmlUnit decompiler.addToken(Token.COLON);
                 decompile(prop.getRight());
             }
             if (i < size - 1) {
-                decompiler.addToken(Token.COMMA);
+                //HtmlUnit decompiler.addToken(Token.COMMA);
             }
         }
-        decompiler.addToken(Token.RC);
+        //HtmlUnit decompiler.addToken(Token.RC);
     }
 
     // only used for destructuring forms
     void decompilePropertyGet(PropertyGet node) {
         decompile(node.getTarget());
-        decompiler.addToken(Token.DOT);
+        //HtmlUnit decompiler.addToken(Token.DOT);
         decompile(node.getProperty());
     }
 
     // only used for destructuring forms
     void decompileElementGet(ElementGet node) {
         decompile(node.getTarget());
-        decompiler.addToken(Token.LB);
+        //HtmlUnit decompiler.addToken(Token.LB);
         decompile(node.getElement());
-        decompiler.addToken(Token.RB);
+        //HtmlUnit decompiler.addToken(Token.RB);
     }
 }
