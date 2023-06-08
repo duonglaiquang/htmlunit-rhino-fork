@@ -51,10 +51,10 @@ final class NativeReflect extends IdScriptableObject {
                     arity = 3;
                     name = "apply";
                     break;
-//                case Id_construct:
-//                    arity = 2;
-//                    name = "construct";
-//                    break;
+                case Id_construct:
+                    arity = 2;
+                    name = "construct";
+                    break;
                 case Id_defineProperty:
                     arity = 3;
                     name = "defineProperty";
@@ -120,8 +120,8 @@ final class NativeReflect extends IdScriptableObject {
 
             case Id_apply:
                 return js_apply(cx, scope, args);
-//            case Id_construct:
-//                return js_construct(cx, scope, args);
+            case Id_construct:
+                return js_construct(cx, scope, args);
             case Id_defineProperty:
                 return js_defineProperty(cx, args);
             case Id_deleteProperty:
@@ -171,19 +171,36 @@ final class NativeReflect extends IdScriptableObject {
         }
         ScriptableObject argumentsList = ScriptableObject.ensureScriptableObject(args[2]);
 
-        return ScriptRuntime.applyOrCall(true, cx, scope, callable, new Object[] {thisObj, argumentsList});
+        return ScriptRuntime.applyOrCall(
+                true, cx, scope, callable, new Object[] {thisObj, argumentsList});
     }
 
     private static Scriptable js_construct(Context cx, Scriptable scope, Object[] args) {
-        return Undefined.SCRIPTABLE_UNDEFINED;
-        // return cx.newObject(scope,"Object",args);
+        if (args.length < 1) {
+            throw ScriptRuntime.typeErrorById(
+                    "msg.method.missing.parameter",
+                    "Reflect.construct",
+                    "3",
+                    Integer.toString(args.length));
+        }
+
+        if (!(args[0] instanceof Function)) {
+            throw ScriptRuntime.typeErrorById("msg.not.ctor", ScriptRuntime.typeof(args[0]));
+        }
+
+        Function ctor = (Function) args[0];
+        if (args.length < 2) {
+            return ctor.construct(cx, scope, ScriptRuntime.emptyArgs);
+        }
+        Object[] callArgs = ScriptRuntime.getApplyArguments(cx, args[1]);
+        return ctor.construct(cx, scope, callArgs);
     }
 
     private static boolean js_defineProperty(Context cx, Object[] args) {
         if (args.length < 3) {
             throw ScriptRuntime.typeErrorById(
                     "msg.method.missing.parameter",
-                    "Reflect.apply",
+                    "Reflect.defineProperty",
                     "3",
                     Integer.toString(args.length));
         }
@@ -240,7 +257,8 @@ final class NativeReflect extends IdScriptableObject {
                 return desc == null ? Undefined.SCRIPTABLE_UNDEFINED : desc;
             }
 
-            ScriptableObject desc = obj.getOwnPropertyDescriptor(cx, ScriptRuntime.toString(args[1]));
+            ScriptableObject desc =
+                    obj.getOwnPropertyDescriptor(cx, ScriptRuntime.toString(args[1]));
             return desc == null ? Undefined.SCRIPTABLE_UNDEFINED : desc;
         }
         return Undefined.SCRIPTABLE_UNDEFINED;
@@ -302,18 +320,16 @@ final class NativeReflect extends IdScriptableObject {
         ScriptableObject obj = checkTarget(args);
 
         if (args.length > 1) {
-            Object value = args.length < 2 ? Undefined.instance : args[2];
-
             if (ScriptRuntime.isSymbol(args[1])) {
-                obj.put((Symbol) args[1], obj, value);
+                obj.put((Symbol) args[1], obj, args[2]);
                 return true;
             }
             if (args[1] instanceof Double) {
-                obj.put(ScriptRuntime.toIndex(args[1]), obj, value);
+                obj.put(ScriptRuntime.toIndex(args[1]), obj, args[2]);
                 return true;
             }
 
-            obj.put(ScriptRuntime.toString(args[1]), obj, value);
+            obj.put(ScriptRuntime.toString(args[1]), obj, args[2]);
             return true;
         }
         return false;
@@ -388,9 +404,9 @@ final class NativeReflect extends IdScriptableObject {
             case "apply":
                 id = Id_apply;
                 break;
-//            case "construct":
-//                id = Id_construct;
-//                break;
+            case "construct":
+                id = Id_construct;
+                break;
             case "defineProperty":
                 id = Id_defineProperty;
                 break;
@@ -434,7 +450,7 @@ final class NativeReflect extends IdScriptableObject {
 
     private static final int Id_toSource = 1,
             Id_apply = 2,
-            // Id_construct = 3,
+            Id_construct = 3,
             Id_defineProperty = 4,
             Id_deleteProperty = 5,
             Id_get = 6,
@@ -447,5 +463,4 @@ final class NativeReflect extends IdScriptableObject {
             Id_set = 13,
             Id_setPrototypeOf = 14,
             LAST_METHOD_ID = Id_setPrototypeOf;
-
 }
