@@ -1113,6 +1113,30 @@ public class ScriptRuntime {
         return value.toString();
     }
 
+    //HtmlUnit
+    static int asIntegerIndex(Object id) {
+        if (id instanceof Integer) {
+            int intId = ((Integer) id).intValue();
+            if (intId < 0) {
+                return -1;
+            }
+            return intId;
+        }
+        return -1;
+    }
+
+    //HtmlUnit
+    static int isIntegerIndex(double id) {
+        int intId = (int) id;
+        if (intId == id) {
+            if (intId < 0) {
+                return -1;
+            }
+            return intId;
+        }
+        return -1;
+    }
+
     static String defaultObjectToSource(
             Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
         boolean toplevel, iterating;
@@ -1140,8 +1164,11 @@ public class ScriptRuntime {
                 for (int i = 0; i < ids.length; i++) {
                     Object id = ids[i];
                     Object value;
-                    if (id instanceof Integer) {
-                        int intId = ((Integer) id).intValue();
+                    //HtmlUnit
+                    //if (id instanceof Integer) {
+                    //    int intId = ((Integer) id).intValue();
+                    int intId = asIntegerIndex(id);
+                    if (intId != -1) {
                         value = thisObj.get(intId, thisObj);
                         if (value == Scriptable.NOT_FOUND) continue; // a property has been removed
                         if (i > 0) result.append(", ");
@@ -1540,9 +1567,14 @@ public class ScriptRuntime {
 
     /** If s represents index, then return index value wrapped as Integer and othewise return s. */
     static Object getIndexObject(String s) {
-        long indexTest = indexFromString(s);
+        //HtmlUnit
+        //long indexTest = indexFromString(s);
+        //if (indexTest >= 0) {
+        //    return Integer.valueOf((int) indexTest);
+        //}
+        int indexTest = (int) indexFromString(s);
         if (indexTest >= 0) {
-            return Integer.valueOf((int) indexTest);
+            return Integer.valueOf(indexTest);
         }
         return s;
     }
@@ -1554,6 +1586,9 @@ public class ScriptRuntime {
     static Object getIndexObject(double d) {
         int i = (int) d;
         if (i == d) {
+            if (i < 0) {
+                return Integer.toString(i);
+            }
             return Integer.valueOf(i);
         }
         return toString(d);
@@ -1588,7 +1623,9 @@ public class ScriptRuntime {
         if (id instanceof Number) {
             double d = ((Number) id).doubleValue();
             int index = (int) d;
-            if (index == d) {
+            //HtmlUnit
+            //if (index == d) {
+            if (index == d && index >= 0) {
                 return new StringIdOrIndex(index);
             }
             return new StringIdOrIndex(toString(id));
@@ -1599,9 +1636,11 @@ public class ScriptRuntime {
         } else {
             s = toString(id);
         }
-        long indexTest = indexFromString(s);
+        //HtmlUnit
+        //long indexTest = indexFromString(s);
+        int indexTest = (int) indexFromString(s);
         if (indexTest >= 0) {
-            return new StringIdOrIndex((int) indexTest);
+            return new StringIdOrIndex(indexTest);
         }
         return new StringIdOrIndex(s);
     }
@@ -1723,8 +1762,11 @@ public class ScriptRuntime {
             throw undefReadError(obj, toString(dblIndex));
         }
 
-        int index = (int) dblIndex;
-        if (index == dblIndex) {
+        //HtmlUnit
+        //int index = (int) dblIndex;
+        //if (index == dblIndex) {
+        int index = isIntegerIndex(dblIndex);
+        if (index != -1) {
             return getObjectIndex(sobj, index, cx);
         }
         String s = toString(dblIndex);
@@ -1827,8 +1869,11 @@ public class ScriptRuntime {
             throw undefWriteError(obj, String.valueOf(dblIndex), value);
         }
 
-        int index = (int) dblIndex;
-        if (index == dblIndex) {
+        //HtmlUnit
+        //int index = (int) dblIndex;
+        //if (index == dblIndex) {
+        int index =  isIntegerIndex(dblIndex);
+        if (index != -1) {
             return setObjectIndex(sobj, index, value, cx);
         }
         String s = toString(dblIndex);
@@ -4454,16 +4499,29 @@ public class ScriptRuntime {
                     Symbol sym = (Symbol) id;
                     SymbolScriptable so = (SymbolScriptable) object;
                     so.put(sym, object, value);
-                } else if (id instanceof Integer) {
-                    int index = ((Integer) id).intValue();
-                    object.put(index, object, value);
+                //HtmlUnit
+                //} else if (id instanceof Integer) {
+                //    int index = ((Integer) id).intValue();
+                //    object.put(index, object, value);
+                //} else {
+                //    String stringId = ScriptRuntime.toString(id);
+                //    if (isSpecialProperty(stringId)) {
+                //        Ref ref = specialRef(object, stringId, cx, scope);
+                //        ref.set(cx, scope, value);
+                //    } else {
+                //        object.put(stringId, object, value);
                 } else {
-                    String stringId = ScriptRuntime.toString(id);
-                    if (isSpecialProperty(stringId)) {
-                        Ref ref = specialRef(object, stringId, cx, scope);
-                        ref.set(cx, scope, value);
+                    int intId = asIntegerIndex(id);
+                    if (intId != -1) {
+                        object.put(intId, object, value);
                     } else {
-                        object.put(stringId, object, value);
+                        String stringId = ScriptRuntime.toString(id);
+                        if (isSpecialProperty(stringId)) {
+                            Ref ref = specialRef(object, stringId, cx, scope);
+                            ref.set(cx, scope, value);
+                        } else {
+                            object.put(stringId, object, value);
+                        }
                     }
                 }
             } else {

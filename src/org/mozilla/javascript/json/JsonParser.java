@@ -118,11 +118,12 @@ public class JsonParser {
                     consume(':');
                     value = readValue();
 
-                    long index = ScriptRuntime.indexFromString(id);
+                    //HtmlUnit
+                    int index = (int) ScriptRuntime.indexFromString(id);
                     if (index < 0) {
                         object.put(id, object, value);
                     } else {
-                        object.put((int) index, object, value);
+                        object.put(index, object, value);
                     }
 
                     needsComma = true;

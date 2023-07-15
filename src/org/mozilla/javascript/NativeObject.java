@@ -404,8 +404,11 @@ public class NativeObject extends IdScriptableObject implements Map {
                     Object[] ids = obj.getIds();
                     int j = 0;
                     for (int i = 0; i < ids.length; i++) {
-                        if (ids[i] instanceof Integer) {
-                            int intId = (Integer) ids[i];
+                        //HtmlUnit
+                        //if (ids[i] instanceof Integer) {
+                        //    int intId = (Integer) ids[i];
+                        int intId = ScriptRuntime.asIntegerIndex(ids[i]);
+                        if (intId != -1) {
                             if (obj.has(intId, obj) && isEnumerable(intId, obj)) {
                                 String stringId = ScriptRuntime.toString(ids[i]);
                                 Object[] entry = new Object[] {stringId, obj.get(intId, obj)};
@@ -434,8 +437,12 @@ public class NativeObject extends IdScriptableObject implements Map {
                             scope,
                             arg,
                             (key, value) -> {
-                                if (key instanceof Integer) {
-                                    obj.put((Integer) key, obj, value);
+                                //HtmlUnit
+                                //if (key instanceof Integer) {
+                                //    obj.put((Integer) key, obj, value);
+                                int intId = ScriptRuntime.asIntegerIndex(key);
+                                if (intId != -1) {
+                                    obj.put(intId, obj, value);
                                 } else if (key instanceof Symbol
                                         && obj instanceof SymbolScriptable) {
                                     ((SymbolScriptable) obj).put((Symbol) key, obj, value);
@@ -452,8 +459,11 @@ public class NativeObject extends IdScriptableObject implements Map {
                     Object[] ids = obj.getIds();
                     int j = 0;
                     for (int i = 0; i < ids.length; i++) {
-                        if (ids[i] instanceof Integer) {
-                            int intId = (Integer) ids[i];
+                        //HtmlUnit
+                        //if (ids[i] instanceof Integer) {
+                        //    int intId = (Integer) ids[i];
+                        int intId = ScriptRuntime.asIntegerIndex(ids[i]);
+                        if (intId != -1) {
                             if (obj.has(intId, obj) && isEnumerable(intId, obj)) {
                                 ids[j++] = obj.get(intId, obj);
                             }
@@ -526,10 +536,19 @@ public class NativeObject extends IdScriptableObject implements Map {
                             continue;
                         } else if (key instanceof Symbol) {
                             descs.put((Symbol) key, descs, desc);
-                        } else if (key instanceof Integer) {
-                            descs.put((Integer) key, descs, desc);
+                        //HtmlUnit
+                        //} else if (key instanceof Integer) {
+                        //    descs.put((Integer) key, descs, desc);
+                        //} else {
+                        //    descs.put(ScriptRuntime.toString(key), descs, desc);
+                        //}
                         } else {
-                            descs.put(ScriptRuntime.toString(key), descs, desc);
+                            int intId = ScriptRuntime.asIntegerIndex(key);
+                            if (intId != -1) {
+                                descs.put(intId, descs, desc);
+                            } else {
+                                descs.put(ScriptRuntime.toString(key), descs, desc);
+                            }
                         }
                     }
                     return descs;
@@ -656,8 +675,11 @@ public class NativeObject extends IdScriptableObject implements Map {
                         Scriptable sourceObj = ScriptRuntime.toObject(cx, scope, args[i]);
                         Object[] ids = sourceObj.getIds();
                         for (Object key : ids) {
-                            if (key instanceof Integer) {
-                                int intId = (Integer) key;
+                            //HtmlUnit
+                            //if (key instanceof Integer) {
+                            //    int intId = (Integer) key;
+                            int intId = ScriptRuntime.asIntegerIndex(key);
+                            if (intId != -1) {
                                 if (sourceObj.has(intId, sourceObj)
                                         && isEnumerable(intId, sourceObj)) {
                                     Object val = sourceObj.get(intId, sourceObj);

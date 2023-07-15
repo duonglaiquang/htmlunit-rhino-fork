@@ -20,6 +20,9 @@ public class Slot implements Serializable {
     transient Slot orderedNext; // next in linked list
 
     Slot(Object name, int indexOrHash, int attributes) {
+        //HtmlUnit
+        assert name != null || indexOrHash >= 0;
+
         this.name = name;
         this.indexOrHash = indexOrHash;
         this.attributes = (short) attributes;
