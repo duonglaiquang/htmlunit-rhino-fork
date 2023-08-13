@@ -91,7 +91,6 @@ public class Test262SuiteTest {
                             "Array.prototype.flatMap",
                             "Atomics",
                             "IsHTMLDDA",
-                            "Proxy",
                             "SharedArrayBuffer",
                             "Symbol.species",
                             "async-functions",
