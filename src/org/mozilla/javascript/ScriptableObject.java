@@ -2280,6 +2280,15 @@ public abstract class ScriptableObject
         return !base.has(index, obj);
     }
 
+    /** A version of deleteProperty for properties with Symbol keys. */
+    public static boolean deleteProperty(Scriptable obj, Symbol key) {
+        Scriptable base = getBase(obj, key);
+        if (base == null) return true;
+        SymbolScriptable scriptable = ensureSymbolScriptable(base);
+        scriptable.delete(key);
+        return !scriptable.has(key, obj);
+    }
+
     /**
      * Returns an array of all ids from an object and its prototypes.
      *
