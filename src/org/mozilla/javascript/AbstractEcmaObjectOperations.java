@@ -1,5 +1,10 @@
 package org.mozilla.javascript;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+
 /**
  * Abstract Object Operations as defined by EcmaScript
  *
@@ -231,5 +236,49 @@ class AbstractEcmaObjectOperations {
         } else {
             base.put(p, o, v);
         }
+    }
+
+    /**
+     * CreateListFromArrayLike ( obj [ , elementTypes ] )
+     *
+     * <p>https://262.ecma-international.org/12.0/#sec-createlistfromarraylike
+     */
+    static List<Object> createListFromArrayLike(
+            Context cx, Scriptable o, Predicate<Object> elementTypesPredicate, String msg) {
+        ScriptableObject obj = ScriptableObject.ensureScriptableObject(o);
+        if (obj instanceof NativeArray) {
+            Object[] arr = ((NativeArray) obj).toArray();
+            for (Object next : arr) {
+                if (!elementTypesPredicate.test(next)) {
+                    throw ScriptRuntime.typeError(msg);
+                }
+            }
+            return Arrays.asList(arr);
+        }
+
+        long len = lengthOfArrayLike(cx, obj);
+        List<Object> list = new ArrayList<>();
+        long index = 0;
+        while (index < len) {
+            // String indexName = ScriptRuntime.toString(index);
+            Object next = ScriptableObject.getProperty(obj, (int) index);
+            if (!elementTypesPredicate.test(next)) {
+                throw ScriptRuntime.typeError(msg);
+            }
+            list.add(next);
+            index++;
+        }
+        return list;
+    }
+
+    /**
+     * LengthOfArrayLike ( obj )
+     *
+     * <p>https://262.ecma-international.org/12.0/#sec-lengthofarraylike
+     */
+    static long lengthOfArrayLike(Context cx, Scriptable o) {
+        Object value = ScriptableObject.getProperty(o, "length");
+        long len = ScriptRuntime.toLength(new Object[] {value}, 0);
+        return len;
     }
 }
