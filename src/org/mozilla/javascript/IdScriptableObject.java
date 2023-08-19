@@ -927,8 +927,7 @@ public abstract class IdScriptableObject extends ScriptableObject implements IdF
 
             if (ScriptRuntime.isSymbol(id)) {
                 if (id instanceof SymbolKey) {
-                    NativeSymbol result = new NativeSymbol((SymbolKey) id);
-                    return getBuiltInDescriptor(result.getKey());
+                    return getBuiltInDescriptor((SymbolKey) id);
                 }
 
                 return getBuiltInDescriptor(((NativeSymbol) id).getKey());
