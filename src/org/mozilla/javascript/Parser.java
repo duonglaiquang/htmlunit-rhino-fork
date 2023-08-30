@@ -3960,6 +3960,10 @@ public class Parser {
         }
     }
 
+    PerFunctionVariables createPerFunctionVariables(FunctionNode fnNode) {
+        return new PerFunctionVariables(fnNode);
+    }
+
     /**
      * Given a destructuring assignment with a left hand side parsed as an array or object literal
      * and a right hand side expression, rewrite as a series of assignments to the variables defined
