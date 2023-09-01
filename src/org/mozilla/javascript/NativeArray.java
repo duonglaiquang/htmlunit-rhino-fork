@@ -702,7 +702,7 @@ public class NativeArray extends IdScriptableObject implements List {
     }
 
     @Override
-    protected void defineOwnProperty(
+    protected boolean defineOwnProperty(
             Context cx, Object id, ScriptableObject desc, boolean checkValid) {
         long index = toArrayIndex(id);
         if (index >= length) {
@@ -733,6 +733,7 @@ public class NativeArray extends IdScriptableObject implements List {
             lengthAttr =
                     getAttributes("length"); // Update cached attributes value for length property
         }
+        return true;
     }
 
     /** See ECMA 15.4.1,2 */
@@ -2251,7 +2252,7 @@ public class NativeArray extends IdScriptableObject implements List {
             return false;
         }
         if (o instanceof NativeProxy) {
-            return js_isArray(((NativeProxy)o).getTargetThrowIfRevoked());
+            return js_isArray(((NativeProxy) o).getTargetThrowIfRevoked());
         }
         return "Array".equals(((Scriptable) o).getClassName());
     }
