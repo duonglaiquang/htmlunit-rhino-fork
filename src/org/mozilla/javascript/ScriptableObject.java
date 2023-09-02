@@ -1953,8 +1953,9 @@ public abstract class ScriptableObject
         return isExtensible;
     }
 
-    public void preventExtensions() {
+    public boolean preventExtensions() {
         isExtensible = false;
+        return true;
     }
 
     /**
