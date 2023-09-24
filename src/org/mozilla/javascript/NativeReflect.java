@@ -111,6 +111,8 @@ final class NativeReflect extends ScriptableObject {
 
         if (args[1] instanceof Scriptable) {
             thisObj = (Scriptable) args[1];
+        } else if (ScriptRuntime.isPrimitive(args[1])) {
+            thisObj = cx.newObject(scope, "Object", new Object[] {args[1]});
         }
 
         if (ScriptRuntime.isSymbol(args[2])) {
@@ -398,17 +400,5 @@ final class NativeReflect extends ScriptableObject {
             throw ScriptRuntime.typeErrorById("msg.arg.not.object", ScriptRuntime.typeof(args[0]));
         }
         return ScriptableObject.ensureScriptableObject(args[0]);
-    }
-
-    private void defineProperty(
-            Scriptable scope,
-            String name,
-            int length,
-            Callable target,
-            int attributes,
-            int propertyAttributes) {
-        LambdaFunction f = new LambdaFunction(scope, name, length, target);
-        f.setStandardPropertyAttributes(propertyAttributes);
-        defineProperty(name, f, attributes);
     }
 }
