@@ -2479,25 +2479,6 @@ public class ScriptRuntime {
                 x.used.intern(previous[i]);
             }
         }
-        if (ids != null
-                && Context.getCurrentContext()
-                        .hasFeature(Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST)) {
-            Set<Integer> integers = new TreeSet<Integer>();
-            List<Object> others = new ArrayList<Object>();
-            for (Object o : ids) {
-                if (o instanceof Integer) {
-                    integers.add((Integer) o);
-                } else {
-                    others.add(o);
-                }
-            }
-            if (!integers.isEmpty()) {
-                Object[] newIds = new Object[ids.length];
-                System.arraycopy(integers.toArray(), 0, newIds, 0, integers.size());
-                System.arraycopy(others.toArray(), 0, newIds, integers.size(), others.size());
-                ids = newIds;
-            }
-        }
         x.ids = ids;
         x.index = 0;
     }

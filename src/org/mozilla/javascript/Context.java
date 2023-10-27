@@ -338,15 +338,6 @@ public class Context implements Closeable {
     /**
      * Special to HtmlUnit's Rhino fork.
      *
-     * <p>Indicates that for(x in []) should enumerate the numbers first.
-     *
-     * <p>By default {@link #hasFeature(int)} returns false.
-     */
-    public static final int FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST = 104;
-
-    /**
-     * Special to HtmlUnit's Rhino fork.
-     *
      * <p>Indicates that {@code MemberBox.toString()} contains property name.
      *
      * <p>By default {@link #hasFeature(int)} returns true.
