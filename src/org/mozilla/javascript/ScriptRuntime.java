@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1114,30 +1115,6 @@ public class ScriptRuntime {
         return value.toString();
     }
 
-    //HtmlUnit
-    static int asIntegerIndex(Object id) {
-        if (id instanceof Integer) {
-            int intId = ((Integer) id).intValue();
-            if (intId < 0) {
-                return -1;
-            }
-            return intId;
-        }
-        return -1;
-    }
-
-    //HtmlUnit
-    static int isIntegerIndex(double id) {
-        int intId = (int) id;
-        if (intId == id) {
-            if (intId < 0) {
-                return -1;
-            }
-            return intId;
-        }
-        return -1;
-    }
-
     static String defaultObjectToSource(
             Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
         boolean toplevel, iterating;
@@ -1165,11 +1142,8 @@ public class ScriptRuntime {
                 for (int i = 0; i < ids.length; i++) {
                     Object id = ids[i];
                     Object value;
-                    //HtmlUnit
-                    //if (id instanceof Integer) {
-                    //    int intId = ((Integer) id).intValue();
-                    int intId = asIntegerIndex(id);
-                    if (intId != -1) {
+                    if (id instanceof Integer) {
+                        int intId = ((Integer) id).intValue();
                         value = thisObj.get(intId, thisObj);
                         if (value == Scriptable.NOT_FOUND) continue; // a property has been removed
                         if (i > 0) result.append(", ");
@@ -1417,6 +1391,27 @@ public class ScriptRuntime {
         return (char) DoubleConversion.doubleToInt32(d);
     }
 
+    /**
+     * If "arg" is a "canonical numeric index," which means any number constructed from a string
+     * that doesn't have extra whitespace or non-standard formatting, return it -- otherwise return
+     * an empty option. Defined in ECMA 7.1.21.
+     */
+    public static Optional<Double> canonicalNumericIndexString(String arg) {
+        if ("-0".equals(arg)) {
+            return Optional.of(Double.NEGATIVE_INFINITY);
+        }
+        double num = toNumber(arg);
+        // According to tests, "NaN" is not a number ;-)
+        if (Double.isNaN(num)) {
+            return Optional.empty();
+        }
+        String numStr = toString(num);
+        if (numStr.equals(arg)) {
+            return Optional.of(num);
+        }
+        return Optional.empty();
+    }
+
     // XXX: this is until setDefaultNamespace will learn how to store NS
     // properly and separates namespace form Scriptable.get etc.
     private static final String DEFAULT_NS_TAG = "__default_namespace__";
@@ -1489,6 +1484,10 @@ public class ScriptRuntime {
      * Return -1L if str is not an index, or the index value as lower 32 bits of the result. Note
      * that the result needs to be cast to an int in order to produce the actual index, which may be
      * negative.
+     *
+     * <p>Note that this method on its own does not actually produce an index that is useful for an
+     * actual Object or Array, because it may be larger than Integer.MAX_VALUE. Most callers should
+     * instead call toStringOrIndex, which calls this under the covers.
      */
     public static long indexFromString(String str) {
         // The length of the decimal string representation of
@@ -1574,14 +1573,9 @@ public class ScriptRuntime {
 
     /** If s represents index, then return index value wrapped as Integer and othewise return s. */
     static Object getIndexObject(String s) {
-        //HtmlUnit
-        //long indexTest = indexFromString(s);
-        //if (indexTest >= 0) {
-        //    return Integer.valueOf((int) indexTest);
-        //}
-        int indexTest = (int) indexFromString(s);
-        if (indexTest >= 0) {
-            return Integer.valueOf(indexTest);
+        long indexTest = indexFromString(s);
+        if (indexTest >= 0 && indexTest <= Integer.MAX_VALUE) {
+            return Integer.valueOf((int) indexTest);
         }
         return s;
     }
@@ -1593,9 +1587,6 @@ public class ScriptRuntime {
     static Object getIndexObject(double d) {
         int i = (int) d;
         if (i == d) {
-            if (i < 0) {
-                return Integer.toString(i);
-            }
             return Integer.valueOf(i);
         }
         return toString(d);
@@ -1607,7 +1598,7 @@ public class ScriptRuntime {
      *
      * @see ScriptRuntime#toStringIdOrIndex(Context, Object)
      */
-    static final class StringIdOrIndex {
+    public static final class StringIdOrIndex {
         final String stringId;
         final int index;
 
@@ -1620,19 +1611,28 @@ public class ScriptRuntime {
             this.stringId = null;
             this.index = index;
         }
+
+        public String getStringId() {
+            return stringId;
+        }
+
+        public int getIndex() {
+            return index;
+        }
     }
 
     /**
      * If id is a number or a string presentation of an int32 value, then id the returning
      * StringIdOrIndex has the index set, otherwise the stringId is set.
      */
-    static StringIdOrIndex toStringIdOrIndex(Object id) {
+    public static StringIdOrIndex toStringIdOrIndex(Object id) {
         if (id instanceof Number) {
             double d = ((Number) id).doubleValue();
+            if (d < 0.0) {
+                return new StringIdOrIndex(toString(id));
+            }
             int index = (int) d;
-            //HtmlUnit
-            //if (index == d) {
-            if (index == d && index >= 0) {
+            if (index == d) {
                 return new StringIdOrIndex(index);
             }
             return new StringIdOrIndex(toString(id));
@@ -1643,11 +1643,9 @@ public class ScriptRuntime {
         } else {
             s = toString(id);
         }
-        //HtmlUnit
-        //long indexTest = indexFromString(s);
-        int indexTest = (int) indexFromString(s);
-        if (indexTest >= 0) {
-            return new StringIdOrIndex(indexTest);
+        long indexTest = indexFromString(s);
+        if (indexTest >= 0 && indexTest <= Integer.MAX_VALUE) {
+            return new StringIdOrIndex((int) indexTest);
         }
         return new StringIdOrIndex(s);
     }
@@ -1769,11 +1767,8 @@ public class ScriptRuntime {
             throw undefReadError(obj, toString(dblIndex));
         }
 
-        //HtmlUnit
-        //int index = (int) dblIndex;
-        //if (index == dblIndex) {
-        int index = isIntegerIndex(dblIndex);
-        if (index != -1) {
+        int index = (int) dblIndex;
+        if (index == dblIndex && index >= 0) {
             return getObjectIndex(sobj, index, cx);
         }
         String s = toString(dblIndex);
@@ -1876,11 +1871,8 @@ public class ScriptRuntime {
             throw undefWriteError(obj, String.valueOf(dblIndex), value);
         }
 
-        //HtmlUnit
-        //int index = (int) dblIndex;
-        //if (index == dblIndex) {
-        int index =  isIntegerIndex(dblIndex);
-        if (index != -1) {
+        int index = (int) dblIndex;
+        if (index == dblIndex && index >= 0) {
             return setObjectIndex(sobj, index, value, cx);
         }
         String s = toString(dblIndex);
@@ -4492,29 +4484,16 @@ public class ScriptRuntime {
                     Symbol sym = (Symbol) id;
                     SymbolScriptable so = (SymbolScriptable) object;
                     so.put(sym, object, value);
-                //HtmlUnit
-                //} else if (id instanceof Integer) {
-                //    int index = ((Integer) id).intValue();
-                //    object.put(index, object, value);
-                //} else {
-                //    String stringId = ScriptRuntime.toString(id);
-                //    if (isSpecialProperty(stringId)) {
-                //        Ref ref = specialRef(object, stringId, cx, scope);
-                //        ref.set(cx, scope, value);
-                //    } else {
-                //        object.put(stringId, object, value);
+                } else if (id instanceof Integer) {
+                    int index = ((Integer) id).intValue();
+                    object.put(index, object, value);
                 } else {
-                    int intId = asIntegerIndex(id);
-                    if (intId != -1) {
-                        object.put(intId, object, value);
+                    String stringId = ScriptRuntime.toString(id);
+                    if (isSpecialProperty(stringId)) {
+                        Ref ref = specialRef(object, stringId, cx, scope);
+                        ref.set(cx, scope, value);
                     } else {
-                        String stringId = ScriptRuntime.toString(id);
-                        if (isSpecialProperty(stringId)) {
-                            Ref ref = specialRef(object, stringId, cx, scope);
-                            ref.set(cx, scope, value);
-                        } else {
-                            object.put(stringId, object, value);
-                        }
+                        object.put(stringId, object, value);
                     }
                 }
             } else {
