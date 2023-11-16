@@ -393,6 +393,9 @@ public class FunctionNode extends ScriptNode {
         } else {
             sb.append("(");
             printList(params, sb);
+            if (getIntProp(TRAILING_COMMA, 0) == 1) {
+                sb.append(", ");
+            }
             sb.append(") ");
         }
         if (isArrow) {
