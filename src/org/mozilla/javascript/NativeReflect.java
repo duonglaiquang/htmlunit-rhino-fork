@@ -181,7 +181,7 @@ final class NativeReflect extends ScriptableObject {
             if (result != null) {
                 result.setPrototype((Scriptable) newTargetPrototype);
 
-                Object val = ctorBaseFunction.call(cx, scope, result, args);
+                Object val = ctorBaseFunction.call(cx, scope, result, callArgs);
                 if (val instanceof Scriptable) {
                     return (Scriptable) val;
                 }
