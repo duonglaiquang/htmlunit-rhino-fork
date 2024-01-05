@@ -2506,7 +2506,7 @@ public class NativeRegExp extends IdScriptableObject {
         return result;
     }
 
-    int getFlags() {
+    public int getFlags() {
         return re.flags;
     }
 
