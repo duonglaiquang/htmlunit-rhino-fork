@@ -6,8 +6,6 @@
 
 package org.mozilla.javascript;
 
-import org.mozilla.javascript.NativeArrayIterator.ARRAY_ITERATOR_TYPE;
-
 /**
  * This class implements the "arguments" object.
  *
@@ -41,7 +39,12 @@ class Arguments extends IdScriptableObject {
             callerObj = NOT_FOUND;
         }
 
-        defineProperty(SymbolKey.ITERATOR, iteratorMethod, ScriptableObject.DONTENUM);
+        defineProperty(
+                SymbolKey.ITERATOR,
+                TopLevel.getBuiltinPrototype(
+                                ScriptableObject.getTopLevelScope(parent), TopLevel.Builtins.Array)
+                        .get("values", parent),
+                ScriptableObject.DONTENUM);
     }
 
     public Arguments(final Arguments original) {
@@ -417,27 +420,6 @@ class Arguments extends IdScriptableObject {
         callerObj = null;
         calleeObj = null;
     }
-
-    @Override
-    public Object getDefaultValue(Class<?> typeHint) {
-        return "[object " + getClassName() + "]";
-    }
-
-    private static BaseFunction iteratorMethod =
-            new BaseFunction() {
-                private static final long serialVersionUID = 4239122318596177391L;
-
-                @Override
-                public Object call(
-                        Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                    // TODO : call %ArrayProto_values%
-                    // 9.4.4.6 CreateUnmappedArgumentsObject(argumentsList)
-                    //  1. Perform DefinePropertyOrThrow(obj, @@iterator, PropertyDescriptor
-                    // {[[Value]]:%ArrayProto_values%,
-                    //     [[Writable]]: true, [[Enumerable]]: false, [[Configurable]]: true}).
-                    return new NativeArrayIterator(scope, thisObj, ARRAY_ITERATOR_TYPE.VALUES);
-                }
-            };
 
     private static class ThrowTypeError extends BaseFunction {
         private static final long serialVersionUID = -744615873947395749L;
