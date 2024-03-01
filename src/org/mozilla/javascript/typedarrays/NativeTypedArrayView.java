@@ -421,6 +421,14 @@ public abstract class NativeTypedArrayView<T> extends NativeArrayBufferView
             initPrototypeMethod(getClassName(), id, SymbolKey.ITERATOR, "[Symbol.iterator]", 0);
             return;
         }
+        if (id == SymbolId_toStringTag) {
+            initPrototypeValue(
+                    SymbolId_toStringTag,
+                    SymbolKey.TO_STRING_TAG,
+                    getClassName(),
+                    DONTENUM | READONLY);
+            return;
+        }
 
         String s, fnName = null;
         int arity;
@@ -459,6 +467,9 @@ public abstract class NativeTypedArrayView<T> extends NativeArrayBufferView
     protected int findPrototypeId(Symbol k) {
         if (SymbolKey.ITERATOR.equals(k)) {
             return SymbolId_iterator;
+        }
+        if (SymbolKey.TO_STRING_TAG.equals(k)) {
+            return SymbolId_toStringTag;
         }
         return 0;
     }
@@ -499,9 +510,10 @@ public abstract class NativeTypedArrayView<T> extends NativeArrayBufferView
             Id_set = 4,
             Id_subarray = 5,
             Id_at = 6,
-            SymbolId_iterator = 7;
+            SymbolId_iterator = 7,
+            SymbolId_toStringTag = 8;
 
-    protected static final int MAX_PROTOTYPE_ID = SymbolId_iterator;
+    protected static final int MAX_PROTOTYPE_ID = SymbolId_toStringTag;
 
     // Constructor properties
 
