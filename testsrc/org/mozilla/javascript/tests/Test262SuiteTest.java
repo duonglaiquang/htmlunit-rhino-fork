@@ -105,7 +105,6 @@ public class Test262SuiteTest {
                             "regexp-lookbehind",
                             "regexp-named-groups",
                             "regexp-unicode-property-escapes",
-                            "rest-parameters",
                             "super",
                             "String.prototype.matchAll",
                             "Symbol.matchAll",
