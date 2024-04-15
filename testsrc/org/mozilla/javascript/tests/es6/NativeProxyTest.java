@@ -95,6 +95,23 @@ public class NativeProxyTest {
     }
 
     @Test
+    public void testTrapSet() {
+        String js =
+                "var res = '';\n"
+                        + "var proxy = new Proxy({}, {\n"
+                        + "  set(obj, prop, value) {\n"
+                        + "    res += value + ' ' + (value instanceof Array);\n"
+                        + "    obj[prop] = value;\n"
+                        + "    return true;\n"
+                        + "  },\n"
+                        + "});\n"
+                        + "proxy.foo = [1, 2, 3];\n"
+                        + "res";
+
+        testString("1,2,3 true", js);
+    }
+
+    @Test
     public void apply() {
         String js =
                 "function sum(a, b) {\n"
