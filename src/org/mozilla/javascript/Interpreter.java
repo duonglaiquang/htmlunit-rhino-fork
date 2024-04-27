@@ -252,8 +252,7 @@ public final class Interpreter extends Icode implements Evaluator {
                 // one. It is required as some objects within fully initialized
                 // global scopes (notably, XMLLibImpl) need to have a top scope
                 // in order to evaluate their attributes.
-                final Context cx = Context.enter();
-                try {
+                try (Context cx = Context.enter()) {
                     if (ScriptRuntime.hasTopCall(cx)) {
                         return equalsInTopScope(other).booleanValue();
                     }
@@ -267,8 +266,6 @@ public final class Interpreter extends Icode implements Evaluator {
                                             ScriptRuntime.emptyArgs,
                                             isStrictTopFrame()))
                             .booleanValue();
-                } finally {
-                    Context.exit();
                 }
             }
             return false;

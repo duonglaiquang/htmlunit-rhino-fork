@@ -618,7 +618,7 @@ public final class IRFactory {
 
     private Node transformFunction(FunctionNode fn) {
         int functionType = fn.getFunctionType();
-        //HtmlUnit int start = decompiler.markFunctionStart(functionType);
+        //HtmlUnit int start = decompiler.markFunctionStart(functionType, fn.isES6Generator());
         Node mexpr = decompileFunctionHeader(fn);
         int index = parser.currentScriptOrFn.addFunction(fn);
 
@@ -693,7 +693,7 @@ public final class IRFactory {
         fn.setRequiresActivation();
 
         //HtmlUnit int functionType = fn.getFunctionType();
-        //HtmlUnit int start = decompiler.markFunctionStart(functionType);
+        //HtmlUnit int start = decompiler.markFunctionStart(functionType, false);
         Node mexpr = decompileFunctionHeader(fn);
         int index = parser.currentScriptOrFn.addFunction(fn);
 
