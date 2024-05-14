@@ -6,8 +6,9 @@
 
 package org.mozilla.javascript;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -23,6 +24,9 @@ final class NativeDate extends IdScriptableObject {
     private static final Object DATE_TAG = "Date";
 
     private static final String js_NaN_date_str = "Invalid Date";
+
+    // TODO: we probably shouldn't be hard coding this to be platform dependent
+    private static final ZoneId HOST_TIME_ZONE = ZoneId.systemDefault();
 
     static void init(Scriptable scope, boolean sealed) {
         NativeDate obj = new NativeDate();
@@ -1351,10 +1355,7 @@ final class NativeDate extends IdScriptableObject {
                 t = MakeDate(day, TimeWithinDay(t));
             }
             result.append(" (");
-            Date date = new Date((long) t);
-            synchronized (timeZoneFormatter) {
-                result.append(timeZoneFormatter.format(date));
-            }
+            result.append(timeZoneFormatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE)));
             result.append(')');
         }
         return result.toString();
@@ -1403,7 +1404,7 @@ final class NativeDate extends IdScriptableObject {
     }
 
     private static String toLocale_helper(double t, int methodId) {
-        DateFormat formatter;
+        DateTimeFormatter formatter;
         switch (methodId) {
             case Id_toLocaleString:
                 formatter = localeDateTimeFormatter;
@@ -1418,9 +1419,7 @@ final class NativeDate extends IdScriptableObject {
                 throw new AssertionError(); // unreachable
         }
 
-        synchronized (formatter) {
-            return formatter.format(new Date((long) t));
-        }
+        return formatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE));
     }
 
     private static String js_toUTCString(double date) {
@@ -1920,11 +1919,10 @@ final class NativeDate extends IdScriptableObject {
     private static final int Id_toGMTString = Id_toUTCString; // Alias, see Ecma B.2.6
 
     // not thread safe
-    private static final DateFormat timeZoneFormatter = new SimpleDateFormat("zzz");
-    private static final DateFormat localeDateTimeFormatter =
-            new SimpleDateFormat("MMMM d, yyyy h:mm:ss a z");
-    private static final DateFormat localeDateFormatter = new SimpleDateFormat("MMMM d, yyyy");
-    private static final DateFormat localeTimeFormatter = new SimpleDateFormat("h:mm:ss a z");
+    private static final DateTimeFormatter timeZoneFormatter = DateTimeFormatter.ofPattern("zzz");
+    private static final DateTimeFormatter localeDateTimeFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy h:mm:ss a z");
+    private static final DateTimeFormatter localeDateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
+    private static final DateTimeFormatter localeTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a z");
 
     private double date;
 }
