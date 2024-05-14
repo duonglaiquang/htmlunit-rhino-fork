@@ -209,4 +209,33 @@ public class NativeDateTest {
                     return null;
                 });
     }
+
+    @Test
+    public void toLocaleString() {
+        String js = "new Date('2021-12-18T22:23').toLocaleString(%s)";
+        Utils.runWithAllOptimizationLevels(
+                cx -> {
+                    final Scriptable scope = cx.initStandardObjects();
+                    cx.setLanguageVersion(Context.VERSION_ES6);
+                    cx.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"en-US\""), "test.js", 0, null);
+                        assertEquals("December 18, 2021 2:23:00 PM PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"de-DE\""), "test.js", 0, null);
+                        assertEquals("Dezember 18, 2021 2:23:00 nachm. PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"ja-JP\""), "test.js", 0, null);
+                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "['foo', 'ja-JP', 'en-US']"), "test.js", 0, null);
+                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                    }
+                    return null;
+                });
+    }
 }
