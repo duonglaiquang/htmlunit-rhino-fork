@@ -221,19 +221,19 @@ public class NativeDateTest {
 
                     {
                         final String res = (String)cx.evaluateString(scope, String.format(js, "\"en-US\""), "test.js", 0, null);
-                        assertEquals("December 18, 2021 2:23:00 PM PST", res);
+                        assertEquals("December 18, 2021 10:23:00 PM GMT", res);
                     }
                     {
                         final String res = (String)cx.evaluateString(scope, String.format(js, "\"de-DE\""), "test.js", 0, null);
-                        assertEquals("Dezember 18, 2021 2:23:00 nachm. PST", res);
+                        assertEquals("Dezember 18, 2021 10:23:00 nachm. GMT", res);
                     }
                     {
                         final String res = (String)cx.evaluateString(scope, String.format(js, "\"ja-JP\""), "test.js", 0, null);
-                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                        assertEquals("12月 18, 2021 10:23:00 午後 GMT", res);
                     }
                     {
                         final String res = (String)cx.evaluateString(scope, String.format(js, "['foo', 'ja-JP', 'en-US']"), "test.js", 0, null);
-                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                        assertEquals("12月 18, 2021 10:23:00 午後 GMT", res);
                     }
                     return null;
                 });
