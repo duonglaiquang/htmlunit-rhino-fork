@@ -1204,7 +1204,7 @@ final class NativeDate extends IdScriptableObject {
                                 + "saturday;sunday;"
                                 + "january;february;march;april;may;june;"
                                 + "july;august;september;october;november;december;"
-                                + "gmt;ut;utc;est;edt;cst;cdt;mst;mdt;pst;pdt;";
+                                + "gmt;ut;utc;est;edt;cst;cdt;mst;mdt;pst;pdt;jst;";
                 int index = 0;
                 for (int wtbOffset = 0; ; ) {
                     int wtbNext = wtb.indexOf(';', wtbOffset);
@@ -1272,6 +1272,9 @@ final class NativeDate extends IdScriptableObject {
                             break;
                         case 10 /* pdt */:
                             tzoffset = 7 * 60;
+                            break;
+                        case 11 /* jst */:
+                            tzoffset = -9 * 60;
                             break;
                         default:
                             Kit.codeBug();
