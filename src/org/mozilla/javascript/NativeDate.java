@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 /**
  * This class implements the Date native object. See ECMA 15.9.
@@ -29,8 +30,7 @@ final class NativeDate extends IdScriptableObject {
 
     private static final String js_NaN_date_str = "Invalid Date";
 
-    // TODO: we probably shouldn't be hard coding this to be platform dependent
-    private static final ZoneId HOST_TIME_ZONE = ZoneId.systemDefault();
+    private static final Supplier<ZoneId> HOST_TIME_ZONE_SUPPLIER = () -> Context.getCurrentContext().getTimeZone().toZoneId();
 
     static void init(Scriptable scope, boolean sealed) {
         NativeDate obj = new NativeDate();
@@ -1356,7 +1356,7 @@ final class NativeDate extends IdScriptableObject {
                 t = MakeDate(day, TimeWithinDay(t));
             }
             result.append(" (");
-            result.append(timeZoneFormatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE)));
+            result.append(timeZoneFormatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE_SUPPLIER.get())));
             result.append(')');
         }
         return result.toString();
@@ -1443,7 +1443,7 @@ final class NativeDate extends IdScriptableObject {
             }
         }
 
-        return formatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE));
+        return formatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE_SUPPLIER.get()));
     }
 
     private static String js_toUTCString(double date) {
