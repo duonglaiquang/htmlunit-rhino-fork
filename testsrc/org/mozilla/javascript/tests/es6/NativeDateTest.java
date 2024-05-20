@@ -212,7 +212,7 @@ public class NativeDateTest {
 
     @Test
     public void toLocaleString() {
-        String js = "new Date('2021-12-18T22:23').toLocaleString(%s)";
+        String js = "new Date('2021-12-18T22:23').%s";
         Utils.runWithAllOptimizationLevels(
                 cx -> {
                     final Scriptable scope = cx.initStandardObjects();
@@ -220,20 +220,36 @@ public class NativeDateTest {
                     cx.setTimeZone(TimeZone.getTimeZone("GMT"));
 
                     {
-                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"en-US\""), "test.js", 0, null);
-                        assertEquals("December 18, 2021 10:23:00 PM GMT", res);
+                        assertEquals("12/18/21, 10:23 PM", cx.evaluateString(scope, String.format(js, "toLocaleString('en-US')"),
+                                "test.js", 0, null));
+                        assertEquals("12/18/21", cx.evaluateString(scope, String.format(js, "toLocaleDateString('en-US')"),
+                                "test.js", 0, null));
+                        assertEquals("10:23 PM", cx.evaluateString(scope, String.format(js, "toLocaleTimeString('en-US')"),
+                                "test.js", 0, null));
                     }
                     {
-                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"de-DE\""), "test.js", 0, null);
-                        assertEquals("Dezember 18, 2021 10:23:00 nachm. GMT", res);
+                        assertEquals("18.12.21, 22:23", cx.evaluateString(scope, String.format(js, "toLocaleString('de-DE')"),
+                                "test.js", 0, null));
+                        assertEquals("18.12.21", cx.evaluateString(scope, String.format(js, "toLocaleDateString('de-DE')"),
+                                "test.js", 0, null));
+                        assertEquals("22:23", cx.evaluateString(scope, String.format(js, "toLocaleTimeString('de-DE')"),
+                                "test.js", 0, null));
                     }
                     {
-                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"ja-JP\""), "test.js", 0, null);
-                        assertEquals("12月 18, 2021 10:23:00 午後 GMT", res);
+                        assertEquals("2021/12/18 22:23", cx.evaluateString(scope, String.format(js, "toLocaleString('ja-JP')"),
+                                "test.js", 0, null));
+                        assertEquals("2021/12/18", cx.evaluateString(scope, String.format(js, "toLocaleDateString('ja-JP')"),
+                                "test.js", 0, null));
+                        assertEquals("22:23", cx.evaluateString(scope, String.format(js, "toLocaleTimeString('ja-JP')"),
+                                "test.js", 0, null));
                     }
                     {
-                        final String res = (String)cx.evaluateString(scope, String.format(js, "['foo', 'ja-JP', 'en-US']"), "test.js", 0, null);
-                        assertEquals("12月 18, 2021 10:23:00 午後 GMT", res);
+                        assertEquals("2021/12/18 22:23", cx.evaluateString(scope, String.format(js, "toLocaleString(['foo', 'ja-JP', 'en-US'])"),
+                                "test.js", 0, null));
+                        assertEquals("2021/12/18", cx.evaluateString(scope, String.format(js, "toLocaleDateString(['foo', 'ja-JP', 'en-US'])"),
+                                "test.js", 0, null));
+                        assertEquals("22:23", cx.evaluateString(scope, String.format(js, "toLocaleTimeString(['foo', 'ja-JP', 'en-US'])"),
+                                "test.js", 0, null));
                     }
                     return null;
                 });

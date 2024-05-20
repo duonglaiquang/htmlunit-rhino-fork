@@ -9,6 +9,7 @@ package org.mozilla.javascript;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1944,9 +1945,10 @@ final class NativeDate extends IdScriptableObject {
 
     // not thread safe
     private static final DateTimeFormatter timeZoneFormatter = DateTimeFormatter.ofPattern("zzz");
-    private static final DateTimeFormatter localeDateTimeFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy h:mm:ss a z");
-    private static final DateTimeFormatter localeDateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
-    private static final DateTimeFormatter localeTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a z");
+    // use FormatStyle.SHORT for these as per spec of an implementation that has no Intl.DateTimeFormat support
+    private static final DateTimeFormatter localeDateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
+    private static final DateTimeFormatter localeDateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+    private static final DateTimeFormatter localeTimeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
 
     private double date;
 }
