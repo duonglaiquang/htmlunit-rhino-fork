@@ -83,6 +83,22 @@ public class NativeDateTest {
     }
 
     @Test
+    public void ctorDateTimeTokyo() {
+        String js = "new Date('2021-12-18T22:23').toISOString()";
+
+        Utils.runWithAllOptimizationLevels(
+                cx -> {
+                    final Scriptable scope = cx.initStandardObjects();
+                    cx.setLanguageVersion(Context.VERSION_ES6);
+                    cx.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
+
+                    final Object res = cx.evaluateString(scope, js, "test.js", 0, null);
+                    assertEquals("2021-12-18T13:23:00.000Z", res);
+                    return null;
+                });
+    }
+
+    @Test
     public void ctorDate() {
         String js = "new Date('2021-12-18').toISOString()";
 
@@ -174,6 +190,51 @@ public class NativeDateTest {
 
                     final Double res = (Double) cx.evaluateString(scope, js, "test.js", 0, null);
                     assertEquals(300, res.doubleValue(), 0.0001);
+                    return null;
+                });
+    }
+
+    @Test
+    public void timezoneOffsetTokyo() {
+        String js = "new Date(0).getTimezoneOffset()";
+
+        Utils.runWithAllOptimizationLevels(
+                cx -> {
+                    final Scriptable scope = cx.initStandardObjects();
+                    cx.setLanguageVersion(Context.VERSION_ES6);
+                    cx.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
+
+                    final Double res = (Double) cx.evaluateString(scope, js, "test.js", 0, null);
+                    assertEquals(-540, res.doubleValue(), 0.0001);
+                    return null;
+                });
+    }
+
+    @Test
+    public void toLocaleString() {
+        String js = "new Date('2021-12-18T22:23').toLocaleString(%s)";
+        Utils.runWithAllOptimizationLevels(
+                cx -> {
+                    final Scriptable scope = cx.initStandardObjects();
+                    cx.setLanguageVersion(Context.VERSION_ES6);
+                    cx.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"en-US\""), "test.js", 0, null);
+                        assertEquals("December 18, 2021 2:23:00 PM PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"de-DE\""), "test.js", 0, null);
+                        assertEquals("Dezember 18, 2021 2:23:00 nachm. PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "\"ja-JP\""), "test.js", 0, null);
+                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                    }
+                    {
+                        final String res = (String)cx.evaluateString(scope, String.format(js, "['foo', 'ja-JP', 'en-US']"), "test.js", 0, null);
+                        assertEquals("12月 18, 2021 2:23:00 午後 PST", res);
+                    }
                     return null;
                 });
     }

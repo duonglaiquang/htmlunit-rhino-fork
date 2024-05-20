@@ -9,7 +9,11 @@ package org.mozilla.javascript;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * This class implements the Date native object. See ECMA 15.9.
@@ -340,7 +344,7 @@ final class NativeDate extends IdScriptableObject {
             case Id_toLocaleTimeString:
             case Id_toLocaleDateString:
                 if (!Double.isNaN(t)) {
-                    return toLocale_helper(t, id);
+                    return toLocale_helper(t, id, args);
                 }
                 return js_NaN_date_str;
 
@@ -1400,7 +1404,7 @@ final class NativeDate extends IdScriptableObject {
         return obj;
     }
 
-    private static String toLocale_helper(double t, int methodId) {
+    private static String toLocale_helper(double t, int methodId, Object[] args) {
         DateTimeFormatter formatter;
         switch (methodId) {
             case Id_toLocaleString:
@@ -1414,6 +1418,29 @@ final class NativeDate extends IdScriptableObject {
                 break;
             default:
                 throw new AssertionError(); // unreachable
+        }
+
+        final List<String> languageTags = new ArrayList<>();
+        if (args.length != 0) {
+            // we use the 'locales' argument but ignore the second 'options' argument as per spec of an
+            // implementation that has no Intl.DateTimeFormat support
+            if (args[0] instanceof NativeArray) {
+                final NativeArray array = (NativeArray) args[0];
+                for (Object languageTag : array) {
+                    languageTags.add(Context.toString(languageTag));
+                }
+            } else {
+                languageTags.add(Context.toString(args[0]));
+            }
+        }
+
+        final List<Locale> availableLocales = Arrays.asList(Locale.getAvailableLocales());
+        for (String languageTag : languageTags) {
+            Locale locale = Locale.forLanguageTag(languageTag);
+            if (availableLocales.contains(locale)) {
+                formatter = formatter.withLocale(locale);
+                break;
+            }
         }
 
         return formatter.format(Instant.ofEpochMilli((long) t).atZone(HOST_TIME_ZONE));
